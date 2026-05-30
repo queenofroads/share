@@ -205,92 +205,175 @@ function OrganizerPanel({ config, onChange, onDone }) {
 
 // ─── Event Graphic ────────────────────────────────────────────────
 
+const STYLES = [
+  { key: 'frame',  name: 'Frame',       desc: 'Full photo + border frame' },
+  { key: 'split',  name: 'Split',       desc: 'Photo left, color panel right' },
+  { key: 'circle', name: 'Circle',      desc: 'Circular photo, text below' },
+  { key: 'banner', name: 'Bold Banner', desc: 'Photo top, color strip below' },
+]
+
 function EventGraphic({ config, attendee, graphicRef }) {
   const primary = config.primaryColor
   const bg = config.bgColor
+  const font = `'${config.fontFamily || 'Inter'}', sans-serif`
+  const style = attendee.style || 'frame'
+  const px = attendee.photoOffset?.x ?? 50
+  const py = attendee.photoOffset?.y ?? 50
+  const objPos = `${px}% ${py}%`
 
-  const badgeLabel =
-    attendee.badge === 'Speaking' ? `Speaking at`
-    : attendee.badge === 'Partner' ? `Partner at`
-    : `Attending`
+  const badgeLabel = attendee.badge === 'Speaking' ? 'Speaking at'
+    : attendee.badge === 'Partner' ? 'Partner at'
+    : 'Attending'
+
+  const LogoOrName = ({ color = primary, height = 36 }) => (
+    config.logoUrl
+      ? <img src={config.logoUrl} alt="logo" style={{ height, width: 'auto', objectFit: 'contain' }} />
+      : <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color }}>{config.eventName}</div>
+  )
+
+  const PhotoImg = ({ style: imgStyle }) => (
+    attendee.photoUrl
+      ? <img src={attendee.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: objPos, display: 'block', ...imgStyle }} />
+      : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }} />
+  )
+
+  const root = { position: 'relative', width: 600, height: 600, overflow: 'hidden', background: bg, fontFamily: font, userSelect: 'none', flexShrink: 0 }
+
+  // ── FRAME ──────────────────────────────────────────────────────────
+  if (style === 'frame') return (
+    <div ref={graphicRef} style={root}>
+      <div style={{ position: 'absolute', inset: 0 }}><PhotoImg /></div>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 140, background: 'linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, transparent 100%)' }} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 200, background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%)' }} />
+      <div style={{ position: 'absolute', inset: 0, border: `10px solid ${primary}`, pointerEvents: 'none', zIndex: 4 }} />
+      {[['top','left'],['top','right'],['bottom','left'],['bottom','right']].map(([v,h]) => (
+        <div key={v+h} style={{ position: 'absolute', [v]: 10, [h]: 10, width: 28, height: 28, background: primary, zIndex: 5 }} />
+      ))}
+      <div style={{ position: 'absolute', top: 26, left: 50, zIndex: 6 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.06em' }}>{config.date}</div>
+      </div>
+      <div style={{ position: 'absolute', top: 20, right: 50, zIndex: 6 }}><LogoOrName /></div>
+      <div style={{ position: 'absolute', bottom: 30, left: 50, right: 50, zIndex: 6 }}>
+        <div style={{ display: 'inline-block', background: primary, color: '#fff', fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>{attendee.badge}</div>
+        <div style={{ fontSize: 42, fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-1px' }}>{badgeLabel}<br />{config.eventName}</div>
+        <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginTop: 8, fontWeight: 500 }}>{config.location}</div>
+      </div>
+    </div>
+  )
+
+  // ── SPLIT ──────────────────────────────────────────────────────────
+  if (style === 'split') return (
+    <div ref={graphicRef} style={{ ...root, display: 'flex' }}>
+      <div style={{ position: 'relative', width: '55%', height: '100%', overflow: 'hidden', flexShrink: 0 }}>
+        <PhotoImg />
+        <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.35))' }} />
+      </div>
+      <div style={{ flex: 1, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px 28px', overflow: 'hidden' }}>
+        <div><LogoOrName color="#fff" height={32} /></div>
+        <div>
+          <div style={{ display: 'inline-block', background: 'rgba(0,0,0,0.25)', color: '#fff', fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>{attendee.badge}</div>
+          <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{badgeLabel}<br />{config.eventName}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>{config.location}</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>{config.date}</div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // ── CIRCLE ─────────────────────────────────────────────────────────
+  if (style === 'circle') return (
+    <div ref={graphicRef} style={{ ...root, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: primary }} />
+      <div style={{ marginTop: 32, zIndex: 2 }}><LogoOrName color={primary} height={32} /></div>
+      <div style={{ marginTop: 28, width: 260, height: 260, borderRadius: '50%', overflow: 'hidden', border: `6px solid ${primary}`, flexShrink: 0, zIndex: 2, boxShadow: `0 0 0 4px ${bg}, 0 0 0 10px ${primary}55` }}>
+        {attendee.photoUrl
+          ? <img src={attendee.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: objPos, display: 'block' }} />
+          : <div style={{ width: '100%', height: '100%', background: '#1F2937', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 80, color: '#374151' }}>?</span></div>
+        }
+      </div>
+      <div style={{ marginTop: 24, textAlign: 'center', padding: '0 40px', zIndex: 2 }}>
+        <div style={{ display: 'inline-block', background: primary, color: '#fff', fontSize: 11, fontWeight: 800, padding: '4px 14px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>{attendee.badge}</div>
+        <div style={{ fontSize: 36, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{badgeLabel}<br />{config.eventName}</div>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 10, fontWeight: 500 }}>{config.location} · {config.date}</div>
+      </div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: primary }} />
+    </div>
+  )
+
+  // ── BANNER ─────────────────────────────────────────────────────────
+  return (
+    <div ref={graphicRef} style={root}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 360, overflow: 'hidden' }}>
+        <PhotoImg />
+        <div style={{ position: 'absolute', top: 16, right: 24, zIndex: 2 }}><LogoOrName height={32} /></div>
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 80, background: `linear-gradient(to top, ${primary}, transparent)` }} />
+      </div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 240, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 40px' }}>
+        <div style={{ display: 'inline-block', background: 'rgba(0,0,0,0.25)', color: '#fff', fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12, alignSelf: 'flex-start' }}>{attendee.badge}</div>
+        <div style={{ fontSize: 40, fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-1px' }}>{badgeLabel}<br />{config.eventName}</div>
+        <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginTop: 10, fontWeight: 500 }}>{config.location} · {config.date}</div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Step 0: Choose Style ─────────────────────────────────────────
+
+function Step0({ config, selectedStyle, onStyle }) {
+  const THUMB = 140
+  const demo = { photoUrl: null, name: '', badge: 'Attending', photoOffset: { x: 50, y: 50 } }
 
   return (
-    <div
-      ref={graphicRef}
-      style={{
-        position: 'relative', width: 600, height: 600,
-        overflow: 'hidden', background: bg,
-        fontFamily: `'${config.fontFamily || 'Inter'}', sans-serif`, userSelect: 'none', flexShrink: 0,
-      }}
-    >
-      {/* Full-bleed photo background */}
-      <div style={{ position: 'absolute', inset: 0, background: '#111' }}>
-        {attendee.photoUrl && (
-          <img src={attendee.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-        )}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, padding: '0 16px', paddingTop: 8 }}>
+      <div style={{ textAlign: 'center' }}>
+        <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', margin: 0 }}>Choose Your Style</h2>
+        <p style={{ color: '#9CA3AF', fontSize: 14, margin: '6px 0 0' }}>Pick a layout — then add your photo</p>
       </div>
 
-      {/* Dark gradient overlay — top */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 140, background: 'linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, transparent 100%)' }} />
-
-      {/* Dark gradient overlay — bottom */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 200, background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%)' }} />
-
-      {/* Thick accent border frame */}
-      <div style={{ position: 'absolute', inset: 0, border: `10px solid ${primary}`, pointerEvents: 'none', zIndex: 4 }} />
-
-      {/* Corner accents */}
-      <div style={{ position: 'absolute', top: 10, left: 10, width: 28, height: 28, background: primary, zIndex: 5 }} />
-      <div style={{ position: 'absolute', top: 10, right: 10, width: 28, height: 28, background: primary, zIndex: 5 }} />
-      <div style={{ position: 'absolute', bottom: 10, left: 10, width: 28, height: 28, background: primary, zIndex: 5 }} />
-      <div style={{ position: 'absolute', bottom: 10, right: 10, width: 28, height: 28, background: primary, zIndex: 5 }} />
-
-      {/* Top row: date left, logo right */}
-      <div style={{ position: 'absolute', top: 26, left: 50, zIndex: 6 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.06em' }}>
-          {config.date}
-        </div>
-      </div>
-      <div style={{ position: 'absolute', top: 20, right: 50, zIndex: 6 }}>
-        {config.logoUrl ? (
-          <img src={config.logoUrl} alt="logo" style={{ height: 36, width: 'auto', objectFit: 'contain' }} />
-        ) : (
-          <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: primary }}>
-            {config.eventName}
-          </div>
-        )}
-      </div>
-
-      {/* Bottom text block */}
-      <div style={{ position: 'absolute', bottom: 30, left: 50, right: 50, zIndex: 6 }}>
-        {/* Badge label */}
-        <div style={{
-          display: 'inline-block', background: primary, color: '#fff',
-          fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 4,
-          textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10,
-        }}>
-          {attendee.badge}
-        </div>
-
-        {/* Main headline */}
-        <div style={{ fontSize: 42, fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-1px' }}>
-          {badgeLabel}<br />{config.eventName}
-        </div>
-
-        {/* Location line */}
-        <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginTop: 8, fontWeight: 500, letterSpacing: '0.03em' }}>
-          {config.location}
-        </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14, width: '100%', maxWidth: 480 }}>
+        {STYLES.map(({ key, name, desc }) => {
+          const active = selectedStyle === key
+          return (
+            <button
+              key={key}
+              onClick={() => onStyle(key)}
+              style={{
+                background: 'transparent',
+                border: `2px solid ${active ? config.primaryColor : '#374151'}`,
+                borderRadius: 14,
+                padding: 12,
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 10,
+                transition: 'all 0.15s',
+                outline: 'none',
+                boxShadow: active ? `0 0 0 2px ${config.primaryColor}40` : 'none',
+              }}
+            >
+              <div style={{ width: THUMB, height: THUMB, borderRadius: 8, overflow: 'hidden', pointerEvents: 'none', flexShrink: 0 }}>
+                <div style={{ transform: `scale(${THUMB / 600})`, transformOrigin: 'top left', width: 600, height: 600 }}>
+                  <EventGraphic config={config} attendee={{ ...demo, style: key }} graphicRef={null} />
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ color: active ? config.primaryColor : '#fff', fontWeight: 700, fontSize: 13 }}>{name}</div>
+                <div style={{ color: '#6B7280', fontSize: 11, marginTop: 2 }}>{desc}</div>
+              </div>
+            </button>
+          )
+        })}
       </div>
 
-      {/* No photo placeholder */}
-      {!attendee.photoUrl && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
-          <div style={{ width: 100, height: 100, borderRadius: '50%', border: `3px dashed ${primary}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: 40, color: '#4a5568' }}>?</span>
-          </div>
-        </div>
-      )}
+      <button
+        onClick={() => onStyle(selectedStyle, true)}
+        style={{ ...styles.btn(config.primaryColor), maxWidth: 300 }}
+      >
+        Use {STYLES.find(s => s.key === selectedStyle)?.name} Style →
+      </button>
     </div>
   )
 }
@@ -391,6 +474,45 @@ function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
               <EventGraphic config={config} attendee={attendee} graphicRef={null} />
             </div>
           </div>
+          {/* Photo position nudge */}
+          {attendee.photoUrl && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, marginTop: 4 }}>
+              <span style={{ ...styles.label, fontSize: 10 }}>Adjust photo position</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                {[
+                  [null, [{ dx: 0, dy: -10, icon: '↑' }], null],
+                  [{ dx: -10, dy: 0, icon: '←' }, { dx: 0, dy: 0, icon: '⊙', reset: true }, { dx: 10, dy: 0, icon: '→' }],
+                  [null, [{ dx: 0, dy: 10, icon: '↓' }], null],
+                ].map((row, ri) => (
+                  <div key={ri} style={{ display: 'flex', gap: 3 }}>
+                    {row.map((cell, ci) => {
+                      if (!cell) return <div key={ci} style={{ width: 32 }} />
+                      const btn = Array.isArray(cell) ? cell[0] : cell
+                      return (
+                        <button
+                          key={ci}
+                          onClick={() => {
+                            if (btn.reset) {
+                              update('photoOffset', { x: 50, y: 50 })
+                            } else {
+                              const cur = attendee.photoOffset || { x: 50, y: 50 }
+                              update('photoOffset', {
+                                x: Math.max(0, Math.min(100, cur.x + btn.dx)),
+                                y: Math.max(0, Math.min(100, cur.y + btn.dy)),
+                              })
+                            }
+                          }}
+                          style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #374151', background: btn.reset ? '#1F2937' : 'transparent', color: '#9CA3AF', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          {btn.icon}
+                        </button>
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Fields */}
@@ -660,7 +782,7 @@ function Step3({ config, caption, imageDataUrl, attendee, autoPost, onReset }) {
 // ─── Progress Bar ─────────────────────────────────────────────────
 
 function ProgressBar({ step, config }) {
-  const steps = ['Upload', 'Preview', 'Share']
+  const steps = ['Style', 'Upload', 'Preview', 'Share']
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 16px' }}>
       {steps.map((label, i) => {
@@ -751,7 +873,7 @@ const IS_ORGANIZER = window.location.pathname.startsWith('/setup')
 export default function App() {
   const [config, setConfig] = useState(loadConfig)
   const [step, setStep] = useState(1)
-  const [attendee, setAttendee] = useState({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending' })
+  const [attendee, setAttendee] = useState({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending', style: 'frame', photoOffset: { x: 50, y: 50 } })
   const [shareCaption, setShareCaption] = useState('')
   const [imageDataUrl, setImageDataUrl] = useState(null)
   const [autoPost, setAutoPost] = useState(false)
@@ -772,14 +894,18 @@ export default function App() {
       setShareCaption(saved.caption)
       setImageDataUrl(saved.imageDataUrl || null)
       setAutoPost(true)
-      setStep(3)
+      setStep(4)
     } catch {}
   }, [])
 
   function handleConfigChange(newCfg) { setConfig(newCfg); saveConfig(newCfg) }
-  function handlePhoto(url) { setAttendee(p => ({ ...p, photoUrl: url })); setStep(2) }
-  function handleShare(caption, dataUrl) { setShareCaption(caption); setImageDataUrl(dataUrl); setStep(3) }
-  function handleReset() { setAttendee({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending' }); setImageDataUrl(null); setAutoPost(false); setStep(1) }
+  function handleStyle(key, advance) {
+    setAttendee(p => ({ ...p, style: key }))
+    if (advance) setStep(2)
+  }
+  function handlePhoto(url) { setAttendee(p => ({ ...p, photoUrl: url })); setStep(3) }
+  function handleShare(caption, dataUrl) { setShareCaption(caption); setImageDataUrl(dataUrl); setStep(4) }
+  function handleReset() { setAttendee({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending', style: 'frame', photoOffset: { x: 50, y: 50 } }); setImageDataUrl(null); setAutoPost(false); setStep(1) }
 
   return (
     <div style={{ minHeight: '100vh', background: config.bgColor, fontFamily: "'Inter', sans-serif" }}>
@@ -846,8 +972,9 @@ export default function App() {
               </div>
             </div>
             <ProgressBar step={step} config={config} />
-            {step === 1 && <Step1 config={config} onPhoto={handlePhoto} />}
-            {step === 2 && (
+            {step === 1 && <Step0 config={config} selectedStyle={attendee.style} onStyle={handleStyle} />}
+            {step === 2 && <Step1 config={config} onPhoto={handlePhoto} />}
+            {step === 3 && (
               <Step2
                 config={config}
                 attendee={attendee}
@@ -856,7 +983,7 @@ export default function App() {
                 onNext={handleShare}
               />
             )}
-            {step === 3 && (
+            {step === 4 && (
               <Step3
                 config={config}
                 caption={shareCaption}
