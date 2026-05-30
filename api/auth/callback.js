@@ -47,7 +47,6 @@ export default async function handler(req, res) {
     `li_session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=3600`
   )
 
-  // Redirect to oauth-success page (handles popup close or full-page redirect)
-  const nameEncoded = encodeURIComponent(name)
-  res.redirect(`${process.env.APP_URL}/oauth-success.html?name=${nameEncoded}`)
+  // Redirect back to app — state is restored from sessionStorage by the React app
+  res.redirect(`${process.env.APP_URL}/?li_connected=1`)
 }

@@ -404,31 +404,26 @@ function dataUrlToBlob(dataUrl) {
   return new Blob([arr], { type: mime })
 }
 
-function Step3({ config, caption, imageDataUrl, onReset }) {
+function Step3({ config, caption, imageDataUrl, attendee, onReset }) {
   const [auth, setAuth] = useState({ loading: true, connected: false, name: null })
   const [postState, setPostState] = useState('idle') // idle | posting | done | error
   const [errorMsg, setErrorMsg] = useState(null)
   const [captionCopied, setCaptionCopied] = useState(false)
 
-  // Check LinkedIn connection status on mount
   useEffect(() => {
     fetch('/api/auth/status')
       .then(r => r.json())
       .then(d => setAuth({ loading: false, connected: d.connected, name: d.name || null }))
       .catch(() => setAuth({ loading: false, connected: false, name: null }))
-
-    // Listen for popup OAuth success
-    function onMsg(e) {
-      if (e.data?.type === 'li_connected') {
-        setAuth({ loading: false, connected: true, name: e.data.name || null })
-      }
-    }
-    window.addEventListener('message', onMsg)
-    return () => window.removeEventListener('message', onMsg)
   }, [])
 
   function connectLinkedIn() {
-    window.open('/api/auth/linkedin', 'li_oauth', 'width=600,height=700,scrollbars=yes')
+    // Save current state to sessionStorage so we can restore after OAuth redirect
+    try {
+      sessionStorage.setItem(SS_KEY, JSON.stringify({ imageDataUrl, caption, attendee }))
+    } catch {}
+    // Full-page redirect — works on all browsers including mobile
+    window.location.href = '/api/auth/linkedin'
   }
 
   async function disconnect() {
@@ -620,6 +615,8 @@ const styles = {
 
 // ─── App Root ─────────────────────────────────────────────────────
 
+const SS_KEY = 'li_share_state'
+
 export default function App() {
   const [config, setConfig] = useState(loadConfig)
   const [showOrganizer, setShowOrganizer] = useState(() => {
@@ -630,6 +627,27 @@ export default function App() {
   const [shareCaption, setShareCaption] = useState('')
   const [imageDataUrl, setImageDataUrl] = useState(null)
   const graphicRef = useRef()
+
+  // On mount: check if returning from LinkedIn OAuth (full-page redirect flow)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('li_connected') === '1') {
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname)
+      // Restore saved state
+      try {
+        const saved = JSON.parse(sessionStorage.getItem(SS_KEY) || '{}')
+        sessionStorage.removeItem(SS_KEY)
+        if (saved.imageDataUrl && saved.caption) {
+          setAttendee(saved.attendee || { photoUrl: null, name: '', titleCompany: '', badge: 'Attending' })
+          setShareCaption(saved.caption)
+          setImageDataUrl(saved.imageDataUrl)
+          setShowOrganizer(false)
+          setStep(3)
+        }
+      } catch {}
+    }
+  }, [])
 
   function handleConfigChange(newCfg) {
     setConfig(newCfg)
@@ -704,6 +722,7 @@ export default function App() {
                 config={config}
                 caption={shareCaption}
                 imageDataUrl={imageDataUrl}
+                attendee={attendee}
                 onReset={handleReset}
               />
             )}
