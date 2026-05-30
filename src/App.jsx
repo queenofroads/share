@@ -167,99 +167,91 @@ function OrganizerPanel({ config, onChange, onDone }) {
 // ─── Event Graphic ────────────────────────────────────────────────
 
 function EventGraphic({ config, attendee, graphicRef }) {
-  const badgeColor =
-    attendee.badge === 'Speaking' ? '#F59E0B'
-    : attendee.badge === 'Partner' ? '#10B981'
-    : config.primaryColor
-
+  const primary = config.primaryColor
   const bg = config.bgColor
-  // Centered photo: (600 - 196) / 2 = 202
-  const photoLeft = 202
+
+  const badgeLabel =
+    attendee.badge === 'Speaking' ? `Speaking at`
+    : attendee.badge === 'Partner' ? `Partner at`
+    : `Attending`
 
   return (
     <div
       ref={graphicRef}
       style={{
-        position: 'relative',
-        width: 600,
-        height: 600,
-        overflow: 'hidden',
-        background: bg,
-        fontFamily: "'Inter', sans-serif",
-        userSelect: 'none',
-        flexShrink: 0,
+        position: 'relative', width: 600, height: 600,
+        overflow: 'hidden', background: bg,
+        fontFamily: "'Inter', sans-serif", userSelect: 'none', flexShrink: 0,
       }}
     >
-      {/* Top accent bar */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 5, background: config.primaryColor }} />
-
-      {/* Logo top-left */}
-      {config.logoUrl ? (
-        <img src={config.logoUrl} alt="logo" style={{ position: 'absolute', top: 22, left: 28, height: 36, width: 'auto', objectFit: 'contain' }} />
-      ) : (
-        <div style={{ position: 'absolute', top: 22, left: 28, background: bg, fontSize: 13, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: config.primaryColor }}>
-          {config.eventName}
-        </div>
-      )}
-
-      {/* Photo circle — centered via exact pixel, no transform */}
-      <div style={{
-        position: 'absolute', top: 66, left: photoLeft,
-        width: 196, height: 196, borderRadius: '50%', overflow: 'hidden',
-        border: `4px solid ${config.primaryColor}`,
-        background: '#1a2035',
-      }}>
-        {attendee.photoUrl ? (
+      {/* Full-bleed photo background */}
+      <div style={{ position: 'absolute', inset: 0, background: '#111' }}>
+        {attendee.photoUrl && (
           <img src={attendee.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-        ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 56, color: '#4a5568', background: '#1a2035' }}>?</div>
         )}
       </div>
 
-      {/* Badge — exact position, no transform */}
-      <div style={{
-        position: 'absolute', top: 70, left: photoLeft + 196 - 14,
-        background: badgeColor, color: '#fff',
-        fontSize: 10, fontWeight: 800, padding: '4px 10px',
-        borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.08em',
-        whiteSpace: 'nowrap',
-      }}>
-        {attendee.badge}
+      {/* Dark gradient overlay — top */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 140, background: 'linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, transparent 100%)' }} />
+
+      {/* Dark gradient overlay — bottom */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 200, background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%)' }} />
+
+      {/* Thick accent border frame */}
+      <div style={{ position: 'absolute', inset: 0, border: `10px solid ${primary}`, pointerEvents: 'none', zIndex: 4 }} />
+
+      {/* Corner accents */}
+      <div style={{ position: 'absolute', top: 10, left: 10, width: 28, height: 28, background: primary, zIndex: 5 }} />
+      <div style={{ position: 'absolute', top: 10, right: 10, width: 28, height: 28, background: primary, zIndex: 5 }} />
+      <div style={{ position: 'absolute', bottom: 10, left: 10, width: 28, height: 28, background: primary, zIndex: 5 }} />
+      <div style={{ position: 'absolute', bottom: 10, right: 10, width: 28, height: 28, background: primary, zIndex: 5 }} />
+
+      {/* Top row: date left, logo right */}
+      <div style={{ position: 'absolute', top: 26, left: 50, zIndex: 6 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.06em' }}>
+          {config.date}
+        </div>
+      </div>
+      <div style={{ position: 'absolute', top: 20, right: 50, zIndex: 6 }}>
+        {config.logoUrl ? (
+          <img src={config.logoUrl} alt="logo" style={{ height: 36, width: 'auto', objectFit: 'contain' }} />
+        ) : (
+          <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: primary }}>
+            {config.eventName}
+          </div>
+        )}
       </div>
 
-      {/* Event name */}
-      <div style={{ position: 'absolute', top: 300, left: 30, right: 30, textAlign: 'center', background: bg }}>
-        <div style={{ fontSize: 56, fontWeight: 900, color: '#ffffff', lineHeight: 1, letterSpacing: '-2px', background: bg }}>
-          {config.eventName}
+      {/* Bottom text block */}
+      <div style={{ position: 'absolute', bottom: 30, left: 50, right: 50, zIndex: 6 }}>
+        {/* Badge label */}
+        <div style={{
+          display: 'inline-block', background: primary, color: '#fff',
+          fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 4,
+          textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10,
+        }}>
+          {attendee.badge}
+        </div>
+
+        {/* Main headline */}
+        <div style={{ fontSize: 42, fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-1px' }}>
+          {badgeLabel}<br />{config.eventName}
+        </div>
+
+        {/* Location line */}
+        <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginTop: 8, fontWeight: 500, letterSpacing: '0.03em' }}>
+          {config.location}
         </div>
       </div>
 
-      {/* Tagline */}
-      {config.tagline && (
-        <div style={{ position: 'absolute', top: 368, left: 30, right: 30, textAlign: 'center', background: bg }}>
-          <div style={{ fontSize: 13, color: config.primaryColor, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', background: bg }}>
-            {config.tagline}
+      {/* No photo placeholder */}
+      {!attendee.photoUrl && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
+          <div style={{ width: 100, height: 100, borderRadius: '50%', border: `3px dashed ${primary}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 40, color: '#4a5568' }}>?</span>
           </div>
         </div>
       )}
-
-      {/* Date + location */}
-      <div style={{ position: 'absolute', top: config.tagline ? 396 : 372, left: 30, right: 30, textAlign: 'center', background: bg }}>
-        <div style={{ fontSize: 14, color: '#9CA3AF', fontWeight: 500, background: bg }}>
-          {config.date}&nbsp;&nbsp;·&nbsp;&nbsp;{config.location}
-        </div>
-      </div>
-
-      {/* Bottom bar */}
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: 62,
-        background: config.primaryColor,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 28px',
-      }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#ffffff', textAlign: 'center', letterSpacing: '0.04em', background: config.primaryColor }}>
-          {config.hashtags}
-        </div>
-      </div>
     </div>
   )
 }
