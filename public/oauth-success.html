@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Connecting…</title>
+  <style>
+    body { margin: 0; background: #0A0F1E; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: Inter, sans-serif; color: #fff; }
+    p { font-size: 15px; color: #9CA3AF; }
+  </style>
+</head>
+<body>
+  <p>Connected! You can close this window.</p>
+  <script>
+    const name = new URLSearchParams(window.location.search).get('name') || ''
+    if (window.opener) {
+      window.opener.postMessage({ type: 'li_connected', name }, window.location.origin)
+      setTimeout(() => window.close(), 300)
+    } else {
+      window.location.href = '/'
+    }
+  </script>
+</body>
+</html>

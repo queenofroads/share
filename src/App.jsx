@@ -405,43 +405,54 @@ function dataUrlToBlob(dataUrl) {
 }
 
 function Step3({ config, caption, imageDataUrl, onReset }) {
-  const [imgState, setImgState] = useState('idle')   // idle | copied | downloaded
+  const [auth, setAuth] = useState({ loading: true, connected: false, name: null })
+  const [postState, setPostState] = useState('idle') // idle | posting | done | error
+  const [errorMsg, setErrorMsg] = useState(null)
   const [captionCopied, setCaptionCopied] = useState(false)
 
-  const blob = imageDataUrl ? dataUrlToBlob(imageDataUrl) : null
-  const file = blob ? new File([blob], 'event-share.png', { type: 'image/png' }) : null
+  // Check LinkedIn connection status on mount
+  useEffect(() => {
+    fetch('/api/auth/status')
+      .then(r => r.json())
+      .then(d => setAuth({ loading: false, connected: d.connected, name: d.name || null }))
+      .catch(() => setAuth({ loading: false, connected: false, name: null }))
 
-  // On mobile with Web Share API — single button hands off image + text to native share sheet
-  const canNativeShare = file && navigator.canShare && navigator.canShare({ files: [file] })
-
-  async function handleNativeShare() {
-    try {
-      await navigator.share({ files: [file], text: caption })
-    } catch (e) {
-      if (e.name !== 'AbortError') handleGetImage() // fall through
+    // Listen for popup OAuth success
+    function onMsg(e) {
+      if (e.data?.type === 'li_connected') {
+        setAuth({ loading: false, connected: true, name: e.data.name || null })
+      }
     }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
+  }, [])
+
+  function connectLinkedIn() {
+    window.open('/api/auth/linkedin', 'li_oauth', 'width=600,height=700,scrollbars=yes')
   }
 
-  async function handleGetImage() {
-    // Try clipboard first
+  async function disconnect() {
+    await fetch('/api/auth/disconnect')
+    setAuth({ loading: false, connected: false, name: null })
+    setPostState('idle')
+  }
+
+  async function postToLinkedIn() {
+    setPostState('posting')
+    setErrorMsg(null)
     try {
-      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-      setImgState('copied')
-      return
-    } catch {}
-    // Fallback: download
-    const a = document.createElement('a')
-    a.href = imageDataUrl
-    a.download = 'event-share.png'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    setImgState('downloaded')
-  }
-
-  function openLinkedIn() {
-    const encoded = encodeURIComponent(caption)
-    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank')
+      const res = await fetch('/api/post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageDataUrl, caption }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Post failed')
+      setPostState('done')
+    } catch (e) {
+      setErrorMsg(e.message || 'Something went wrong')
+      setPostState('error')
+    }
   }
 
   async function copyCaption() {
@@ -449,14 +460,6 @@ function Step3({ config, caption, imageDataUrl, onReset }) {
     setCaptionCopied(true)
     setTimeout(() => setCaptionCopied(false), 2500)
   }
-
-  const imgLabel =
-    imgState === 'copied' ? '✓ Image Copied to Clipboard' :
-    imgState === 'downloaded' ? '✓ Image Downloaded' :
-    '1. Copy / Save Image'
-
-  const imgColor =
-    imgState !== 'idle' ? '#10B981' : config.primaryColor
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '55vh', gap: 20, textAlign: 'center', padding: '0 16px' }}>
@@ -470,46 +473,59 @@ function Step3({ config, caption, imageDataUrl, onReset }) {
         />
       )}
 
-      <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', margin: 0 }}>Ready to share!</h2>
-
-      {canNativeShare ? (
-        // ── Mobile: one button, native share sheet ──
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 320 }}>
-          <button onClick={handleNativeShare} style={styles.btn('#0A66C2')}>
-            📤 Share on LinkedIn
-          </button>
-          <button onClick={copyCaption} style={styles.btn(captionCopied ? '#10B981' : '#1F2937')}>
-            {captionCopied ? 'Caption Copied ✓' : 'Copy Caption'}
-          </button>
-        </div>
+      {postState === 'done' ? (
+        <>
+          <div style={{ fontSize: 52 }}>🎉</div>
+          <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', margin: 0 }}>Posted to LinkedIn!</h2>
+          <p style={{ color: '#9CA3AF', fontSize: 14, margin: 0 }}>Your graphic is live on your profile.</p>
+        </>
       ) : (
-        // ── Desktop: two explicit steps ──
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 340 }}>
-          {/* Step 1 */}
-          <button onClick={handleGetImage} style={styles.btn(imgColor)}>
-            {imgLabel}
-          </button>
+        <>
+          <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', margin: 0 }}>Ready to share!</h2>
 
-          {imgState === 'copied' && (
-            <p style={{ color: '#9CA3AF', fontSize: 12, margin: '-4px 0 0', padding: '0 4px' }}>
-              Image is in your clipboard — paste it in LinkedIn with Ctrl+V / Cmd+V
-            </p>
-          )}
-          {imgState === 'downloaded' && (
-            <p style={{ color: '#9CA3AF', fontSize: 12, margin: '-4px 0 0', padding: '0 4px' }}>
-              Image saved to Downloads — attach it using the photo icon in LinkedIn
-            </p>
-          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 340 }}>
+            {auth.loading ? (
+              <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>Checking LinkedIn connection…</p>
+            ) : !auth.connected ? (
+              <>
+                <button onClick={connectLinkedIn} style={styles.btn('#0A66C2')}>
+                  Connect LinkedIn to Post
+                </button>
+                <p style={{ color: '#6B7280', fontSize: 12, margin: 0 }}>
+                  A popup will open — log in and allow access. Your post will include the image automatically.
+                </p>
+              </>
+            ) : (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981' }} />
+                  <span style={{ color: '#9CA3AF', fontSize: 13 }}>
+                    Connected as <strong style={{ color: '#fff' }}>{auth.name}</strong>
+                  </span>
+                  <button onClick={disconnect} style={{ background: 'none', border: 'none', color: '#4B5563', fontSize: 12, cursor: 'pointer', padding: 0 }}>
+                    (disconnect)
+                  </button>
+                </div>
 
-          {/* Step 2 */}
-          <button onClick={openLinkedIn} style={{ ...styles.btn('#0A66C2'), marginTop: 4 }}>
-            2. Open LinkedIn →
-          </button>
+                <button
+                  onClick={postToLinkedIn}
+                  disabled={postState === 'posting'}
+                  style={{ ...styles.btn('#0A66C2'), opacity: postState === 'posting' ? 0.7 : 1 }}
+                >
+                  {postState === 'posting' ? 'Posting…' : '📤 Post to LinkedIn'}
+                </button>
 
-          <button onClick={copyCaption} style={styles.btn(captionCopied ? '#10B981' : '#1F2937')}>
-            {captionCopied ? 'Caption Copied ✓' : 'Copy Caption'}
-          </button>
-        </div>
+                {postState === 'error' && (
+                  <p style={{ color: '#F87171', fontSize: 13, margin: 0 }}>{errorMsg}</p>
+                )}
+              </>
+            )}
+
+            <button onClick={copyCaption} style={styles.btn(captionCopied ? '#10B981' : '#1F2937')}>
+              {captionCopied ? 'Caption Copied ✓' : 'Copy Caption'}
+            </button>
+          </div>
+        </>
       )}
 
       <button onClick={onReset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', fontSize: 14, marginTop: 4 }}>
