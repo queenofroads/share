@@ -705,9 +705,10 @@ const styles = {
 
 const SS_KEY = 'li_share_state'
 
-// Organizer mode is unlocked by visiting ?setup in the URL.
-// Visiting the plain URL shows only the attendee flow.
-const IS_ORGANIZER = new URLSearchParams(window.location.search).has('setup')
+// Organizer mode: visit shareevent.vercel.app/#setup
+// Attendee mode:  visit shareevent.vercel.app  (no hash)
+// Hash is client-side only — Vercel rewrites never strip it.
+const IS_ORGANIZER = window.location.hash === '#setup'
 
 export default function App() {
   const [config, setConfig] = useState(loadConfig)
