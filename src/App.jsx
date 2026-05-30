@@ -12,8 +12,12 @@ const DEFAULT_CONFIG = {
   hashtags: '#ARCTIC15 #Helsinki #Startup',
   mention: '@ARCTIC15',
   logoUrl: null,
-  captionTemplate:
+  captionAttending:
     "Excited to be joining {eventName} in {location}. If you're building something ambitious, this is where I'll be. {mention} {hashtags}",
+  captionSpeaking:
+    "Excited to be speaking at {eventName} in {location}. Come find me there — let's talk. {mention} {hashtags}",
+  captionPartner:
+    "Proud to be a partner at {eventName} in {location}. See you there! {mention} {hashtags}",
   primaryColor: '#0066FF',
   bgColor: '#0A0F1E',
 }
@@ -28,6 +32,12 @@ function loadConfig() {
 
 function saveConfig(cfg) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg))
+}
+
+function getTemplate(config, badge) {
+  if (badge === 'Speaking') return config.captionSpeaking || config.captionAttending || ''
+  if (badge === 'Partner') return config.captionPartner || config.captionAttending || ''
+  return config.captionAttending || ''
 }
 
 function buildCaption(template, config, name) {
@@ -95,20 +105,26 @@ function OrganizerPanel({ config, onChange, onDone }) {
         <input ref={fileRef} type="file" accept="image/png,image/svg+xml" style={{ display: 'none' }} onChange={handleLogoUpload} />
       </div>
 
-      {/* Caption template */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <label style={styles.label}>
-          Caption Template{' '}
-          <span style={{ color: '#6B7280', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>
-            — use {'{name}'}, {'{eventName}'}, {'{location}'}, {'{mention}'}, {'{hashtags}'}
-          </span>
-        </label>
-        <textarea
-          style={{ ...styles.input, resize: 'none', minHeight: 90 }}
-          value={config.captionTemplate || ''}
-          onChange={(e) => onChange({ ...config, captionTemplate: e.target.value })}
-        />
-      </div>
+      {/* Caption templates per badge */}
+      {[
+        { key: 'captionAttending', label: 'Caption — Attending' },
+        { key: 'captionSpeaking',  label: 'Caption — Speaking'  },
+        { key: 'captionPartner',   label: 'Caption — Partner'   },
+      ].map(({ key, label }) => (
+        <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <label style={styles.label}>
+            {label}{' '}
+            <span style={{ color: '#6B7280', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>
+              — {'{eventName}'}, {'{location}'}, {'{mention}'}, {'{hashtags}'}
+            </span>
+          </label>
+          <textarea
+            style={{ ...styles.input, resize: 'none', minHeight: 72 }}
+            value={config[key] || ''}
+            onChange={(e) => onChange({ ...config, [key]: e.target.value })}
+          />
+        </div>
+      ))}
 
       {/* Colors */}
       <div style={styles.grid2}>
@@ -291,12 +307,12 @@ function Step1({ config, onPhoto }) {
 // ─── Step 2: Preview & Edit ───────────────────────────────────────
 
 function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
-  const [localCaption, setLocalCaption] = useState(() => buildCaption(config.captionTemplate, config, attendee.name))
+  const [localCaption, setLocalCaption] = useState(() => buildCaption(getTemplate(config, attendee.badge), config, attendee.name))
   const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
-    setLocalCaption(buildCaption(config.captionTemplate, config, attendee.name))
-  }, [attendee.name, config.captionTemplate, config.eventName, config.location, config.mention, config.hashtags])
+    setLocalCaption(buildCaption(getTemplate(config, attendee.badge), config, attendee.name))
+  }, [attendee.badge, attendee.name, config.captionAttending, config.captionSpeaking, config.captionPartner, config.eventName, config.location, config.mention, config.hashtags])
 
   const charCount = localCaption.length
   const warn = charCount >= 280
