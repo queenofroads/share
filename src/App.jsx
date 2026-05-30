@@ -705,11 +705,13 @@ const styles = {
 
 const SS_KEY = 'li_share_state'
 
+// Organizer mode is unlocked by visiting ?setup in the URL.
+// Visiting the plain URL shows only the attendee flow.
+const IS_ORGANIZER = new URLSearchParams(window.location.search).has('setup')
+
 export default function App() {
   const [config, setConfig] = useState(loadConfig)
-  const [showOrganizer, setShowOrganizer] = useState(() => {
-    try { return !localStorage.getItem(STORAGE_KEY) } catch { return true }
-  })
+  const [showOrganizerPanel, setShowOrganizerPanel] = useState(IS_ORGANIZER)
   const [step, setStep] = useState(1)
   const [attendee, setAttendee] = useState({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending' })
   const [shareCaption, setShareCaption] = useState('')
@@ -731,8 +733,8 @@ export default function App() {
       if (saved.attendee) setAttendee(saved.attendee)
       setShareCaption(saved.caption)
       setImageDataUrl(saved.imageDataUrl || null)
-      setShowOrganizer(false)
-      setAutoPost(true)   // ← tells Step3 to post immediately
+      setShowOrganizerPanel(false)
+      setAutoPost(true)
       setStep(3)
     } catch {}
   }, [])
@@ -744,6 +746,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: config.bgColor, fontFamily: "'Inter', sans-serif" }}>
+
       {/* Header */}
       <div style={{ borderBottom: '1px solid #1F2937', padding: '12px 16px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
@@ -751,31 +754,36 @@ export default function App() {
             {config.logoUrl && (
               <img src={config.logoUrl} alt="logo" style={{ height: 28, width: 'auto', objectFit: 'contain' }} />
             )}
-            <span style={{ color: '#fff', fontWeight: 700, fontSize: 15, letterSpacing: '0.01em' }}>{config.eventName}</span>
+            <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>{config.eventName}</span>
             {config.tagline && (
-              <span style={{ color: '#6B7280', fontSize: 12, display: window.innerWidth < 500 ? 'none' : undefined }}>· {config.tagline}</span>
+              <span style={{ color: '#6B7280', fontSize: 12 }}>· {config.tagline}</span>
             )}
           </div>
-          <button
-            onClick={() => setShowOrganizer((v) => !v)}
-            style={{ fontSize: 12, color: '#9CA3AF', border: '1px solid #374151', borderRadius: 8, padding: '6px 12px', background: 'transparent', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
-          >
-            {showOrganizer ? 'Hide Setup ↑' : '⚙ Organizer Setup'}
-          </button>
+
+          {/* Only show organizer controls when in organizer mode */}
+          {IS_ORGANIZER && (
+            <button
+              onClick={() => setShowOrganizerPanel(v => !v)}
+              style={{ fontSize: 12, color: '#9CA3AF', border: '1px solid #374151', borderRadius: 8, padding: '6px 12px', background: 'transparent', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
+            >
+              {showOrganizerPanel ? 'Hide Setup ↑' : '⚙ Organizer Setup'}
+            </button>
+          )}
         </div>
       </div>
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-        {/* Organizer Panel */}
-        {showOrganizer && (
+
+        {/* Organizer Panel — only visible in organizer mode */}
+        {IS_ORGANIZER && showOrganizerPanel && (
           <div>
             <h2 style={{ color: '#fff', fontWeight: 700, fontSize: 18, margin: '0 0 14px' }}>Configure Your Event</h2>
-            <OrganizerPanel config={config} onChange={handleConfigChange} onDone={() => setShowOrganizer(false)} />
+            <OrganizerPanel config={config} onChange={handleConfigChange} onDone={() => setShowOrganizerPanel(false)} />
           </div>
         )}
 
-        {/* Attendee Flow */}
-        {!showOrganizer && (
+        {/* Attendee flow — always shown when organizer panel is hidden */}
+        {!showOrganizerPanel && (
           <div>
             <ProgressBar step={step} config={config} />
             {step === 1 && <Step1 config={config} onPhoto={handlePhoto} />}
