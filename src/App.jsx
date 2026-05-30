@@ -216,18 +216,8 @@ function EventGraphic({ config, attendee, graphicRef }) {
         </div>
       </div>
 
-      {/* Name */}
-      <div style={{ position: 'absolute', top: 264, left: 20, right: 20, textAlign: 'center' }}>
-        <div style={{ fontSize: 26, fontWeight: 800, color: '#fff', lineHeight: 1.1, marginBottom: 6 }}>
-          {attendee.name || 'Your Name'}
-        </div>
-        {attendee.titleCompany && (
-          <div style={{ fontSize: 13, color: '#9CA3AF', fontWeight: 500 }}>{attendee.titleCompany}</div>
-        )}
-      </div>
-
       {/* Event name */}
-      <div style={{ position: 'absolute', top: 360, left: 20, right: 20, textAlign: 'center' }}>
+      <div style={{ position: 'absolute', top: 300, left: 20, right: 20, textAlign: 'center' }}>
         <div style={{ fontSize: 44, fontWeight: 900, color: '#fff', lineHeight: 1, letterSpacing: '-1.5px' }}>{config.eventName}</div>
         {config.tagline && (
           <div style={{ fontSize: 11, color: '#718096', marginTop: 5, fontWeight: 500, letterSpacing: '0.03em' }}>{config.tagline}</div>
@@ -235,7 +225,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
       </div>
 
       {/* Date + location */}
-      <div style={{ position: 'absolute', top: 438, left: 20, right: 20, textAlign: 'center' }}>
+      <div style={{ position: 'absolute', top: 378, left: 20, right: 20, textAlign: 'center' }}>
         <div style={{ fontSize: 14, color: '#CBD5E0', fontWeight: 500 }}>{config.date} · {config.location}</div>
       </div>
 
