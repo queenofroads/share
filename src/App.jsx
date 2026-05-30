@@ -342,16 +342,22 @@ function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
   const PREVIEW_W = 300
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '0 16px', maxWidth: 900, margin: '0 auto', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '0 16px', maxWidth: 900, margin: '0 auto', width: '100%', position: 'relative' }}>
+
+      {/* Hidden full-size graphic for capture — NOT inside scale() */}
+      <div style={{ position: 'absolute', left: -700, top: 0, width: 600, height: 600, overflow: 'hidden', pointerEvents: 'none', zIndex: -1 }}>
+        <EventGraphic config={config} attendee={attendee} graphicRef={graphicRef} />
+      </div>
+
       {/* Responsive row */}
       <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 28, alignItems: 'flex-start', justifyContent: 'center' }}>
 
-        {/* Preview */}
+        {/* Scaled-down preview — no ref */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
           <span style={styles.label}>Preview</span>
           <div style={{ borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', width: PREVIEW_W, height: PREVIEW_W }}>
             <div style={{ transform: `scale(${PREVIEW_W / 600})`, transformOrigin: 'top left', width: 600, height: 600 }}>
-              <EventGraphic config={config} attendee={attendee} graphicRef={graphicRef} />
+              <EventGraphic config={config} attendee={attendee} graphicRef={null} />
             </div>
           </div>
         </div>
