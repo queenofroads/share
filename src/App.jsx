@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import domtoimage from 'dom-to-image-more'
+import html2canvas from 'html2canvas'
 import './index.css'
 
 const STORAGE_KEY = 'event-share-config'
@@ -173,6 +173,8 @@ function EventGraphic({ config, attendee, graphicRef }) {
     : config.primaryColor
 
   const bg = config.bgColor
+  // Centered photo: (600 - 196) / 2 = 202
+  const photoLeft = 202
 
   return (
     <div
@@ -188,14 +190,6 @@ function EventGraphic({ config, attendee, graphicRef }) {
         flexShrink: 0,
       }}
     >
-      {/* Subtle radial glow behind photo */}
-      <div style={{
-        position: 'absolute', top: 40, left: '50%', transform: 'translateX(-50%)',
-        width: 340, height: 340, borderRadius: '50%',
-        background: `radial-gradient(circle, ${config.primaryColor}28 0%, transparent 70%)`,
-        pointerEvents: 'none',
-      }} />
-
       {/* Top accent bar */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 5, background: config.primaryColor }} />
 
@@ -203,62 +197,58 @@ function EventGraphic({ config, attendee, graphicRef }) {
       {config.logoUrl ? (
         <img src={config.logoUrl} alt="logo" style={{ position: 'absolute', top: 22, left: 28, height: 36, width: 'auto', objectFit: 'contain' }} />
       ) : (
-        <div style={{ position: 'absolute', top: 22, left: 28, fontSize: 13, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: config.primaryColor }}>
+        <div style={{ position: 'absolute', top: 22, left: 28, background: bg, fontSize: 13, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: config.primaryColor }}>
           {config.eventName}
         </div>
       )}
 
-      {/* Photo circle — no wrapper div */}
+      {/* Photo circle — centered via exact pixel, no transform */}
       <div style={{
-        position: 'absolute', top: 66, left: '50%', transform: 'translateX(-50%)',
+        position: 'absolute', top: 66, left: photoLeft,
         width: 196, height: 196, borderRadius: '50%', overflow: 'hidden',
         border: `4px solid ${config.primaryColor}`,
-        outline: 'none',
         background: '#1a2035',
       }}>
         {attendee.photoUrl ? (
           <img src={attendee.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 56, color: '#4a5568' }}>?</div>
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 56, color: '#4a5568', background: '#1a2035' }}>?</div>
         )}
       </div>
 
-      {/* Badge — sibling of photo, not child */}
+      {/* Badge — exact position, no transform */}
       <div style={{
-        position: 'absolute', top: 68, left: '50%', marginLeft: 62,
+        position: 'absolute', top: 70, left: photoLeft + 196 - 14,
         background: badgeColor, color: '#fff',
         fontSize: 10, fontWeight: 800, padding: '4px 10px',
         borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.08em',
-        whiteSpace: 'nowrap', outline: 'none',
+        whiteSpace: 'nowrap',
       }}>
         {attendee.badge}
       </div>
 
       {/* Event name */}
-      <div style={{ position: 'absolute', top: 300, left: 30, right: 30, textAlign: 'center' }}>
-        <div style={{ fontSize: 56, fontWeight: 900, color: '#ffffff', lineHeight: 1, letterSpacing: '-2px' }}>
+      <div style={{ position: 'absolute', top: 300, left: 30, right: 30, textAlign: 'center', background: bg }}>
+        <div style={{ fontSize: 56, fontWeight: 900, color: '#ffffff', lineHeight: 1, letterSpacing: '-2px', background: bg }}>
           {config.eventName}
         </div>
       </div>
 
       {/* Tagline */}
       {config.tagline && (
-        <div style={{ position: 'absolute', top: 368, left: 30, right: 30, textAlign: 'center' }}>
-          <div style={{ fontSize: 13, color: config.primaryColor, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+        <div style={{ position: 'absolute', top: 368, left: 30, right: 30, textAlign: 'center', background: bg }}>
+          <div style={{ fontSize: 13, color: config.primaryColor, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', background: bg }}>
             {config.tagline}
           </div>
         </div>
       )}
 
       {/* Date + location */}
-      <div style={{ position: 'absolute', top: config.tagline ? 396 : 372, left: 30, right: 30, textAlign: 'center' }}>
-        <div style={{ fontSize: 14, color: '#9CA3AF', fontWeight: 500 }}>
+      <div style={{ position: 'absolute', top: config.tagline ? 396 : 372, left: 30, right: 30, textAlign: 'center', background: bg }}>
+        <div style={{ fontSize: 14, color: '#9CA3AF', fontWeight: 500, background: bg }}>
           {config.date}&nbsp;&nbsp;·&nbsp;&nbsp;{config.location}
         </div>
       </div>
-
-      {/* Thin divider */}
-      <div style={{ position: 'absolute', top: config.tagline ? 430 : 406, left: 80, right: 80, height: 1, background: 'rgba(255,255,255,0.08)' }} />
 
       {/* Bottom bar */}
       <div style={{
@@ -266,7 +256,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
         background: config.primaryColor,
         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 28px',
       }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.95)', textAlign: 'center', letterSpacing: '0.04em' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#ffffff', textAlign: 'center', letterSpacing: '0.04em', background: config.primaryColor }}>
           {config.hashtags}
         </div>
       </div>
@@ -413,7 +403,12 @@ function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
               let dataUrl = null
               if (graphicRef.current) {
                 try {
-                  dataUrl = await domtoimage.toPng(graphicRef.current, { width: 600, height: 600 })
+                  const canvas = await html2canvas(graphicRef.current, {
+                    width: 600, height: 600, scale: 1,
+                    useCORS: true, allowTaint: true, backgroundColor: null,
+                    logging: false,
+                  })
+                  dataUrl = canvas.toDataURL('image/png')
                 } catch {}
               }
               setExporting(false)
