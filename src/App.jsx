@@ -225,7 +225,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
     : attendee.badge === 'Partner' ? 'Partner at'
     : 'Attending'
 
-  const LogoOrName = ({ color = primary, height = 36 }) => (
+  const LogoOrName = ({ color = primary, height = 47 }) => (
     config.logoUrl
       ? <img src={config.logoUrl} alt="logo" style={{ height, width: 'auto', objectFit: 'contain' }} />
       : <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color }}>{config.eventName}</div>
@@ -269,7 +269,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
         <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.35))' }} />
       </div>
       <div style={{ flex: 1, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px 28px', overflow: 'hidden' }}>
-        <div><LogoOrName color="#fff" height={32} /></div>
+        <div><LogoOrName color="#fff" height={42} /></div>
         <div>
           <div style={{ display: 'inline-block', background: 'rgba(0,0,0,0.25)', color: '#fff', fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>{attendee.badge}</div>
           <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{badgeLabel}<br />{config.eventName}</div>
@@ -286,7 +286,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
   if (style === 'circle') return (
     <div ref={graphicRef} style={{ ...root, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: primary }} />
-      <div style={{ marginTop: 32, zIndex: 2 }}><LogoOrName color={primary} height={32} /></div>
+      <div style={{ marginTop: 32, zIndex: 2 }}><LogoOrName color={primary} height={42} /></div>
       <div style={{ marginTop: 28, width: 260, height: 260, borderRadius: '50%', overflow: 'hidden', border: `6px solid ${primary}`, flexShrink: 0, zIndex: 2, boxShadow: `0 0 0 4px ${bg}, 0 0 0 10px ${primary}55` }}>
         {attendee.photoUrl
           ? <img src={attendee.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: objPos, display: 'block' }} />
@@ -307,7 +307,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
     <div ref={graphicRef} style={root}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 360, overflow: 'hidden' }}>
         <PhotoImg />
-        <div style={{ position: 'absolute', top: 16, right: 24, zIndex: 2 }}><LogoOrName height={32} /></div>
+        <div style={{ position: 'absolute', top: 16, right: 24, zIndex: 2 }}><LogoOrName height={42} /></div>
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 80, background: `linear-gradient(to top, ${primary}, transparent)` }} />
       </div>
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 240, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 40px' }}>
