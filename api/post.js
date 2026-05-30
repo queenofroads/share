@@ -48,7 +48,9 @@ export default async function handler(req, res) {
 
   const initData = await initRes.json()
   if (!initData?.value?.uploadUrl) {
-    return res.status(500).json({ error: 'Failed to initialize image upload', detail: initData })
+    const detail = JSON.stringify(initData)
+    const msg = initData?.message || initData?.error || detail
+    return res.status(500).json({ error: `Image upload failed: ${msg}` })
   }
 
   const { uploadUrl, image: imageUrn } = initData.value
