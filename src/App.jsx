@@ -513,136 +513,107 @@ function Step3({ config, caption, imageDataUrl, attendee, autoPost, onReset }) {
     a.click()
   }
 
-  const actionButtons = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 400 }}>
-      <button
-        onClick={auth.connected ? doPost : connectLinkedIn}
-        disabled={auth.loading}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-          background: '#0A66C2', border: 'none', borderRadius: 14,
-          padding: '16px 20px', cursor: 'pointer', textAlign: 'left',
-          opacity: auth.loading ? 0.6 : 1,
-        }}
-      >
-        <span style={{ width: 42, height: 42, borderRadius: 10, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
-        </span>
-        <span style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: '#fff', fontWeight: 700, fontSize: 16 }}>Post to LinkedIn</span>
-            <span style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99 }}>Recommended</span>
-          </span>
-          <span style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13 }}>
-            {auth.loading ? 'Checking connection…' : auth.connected ? `Connected as ${auth.name}` : 'One click with your caption included'}
-          </span>
-        </span>
-        <svg width="16" height="16" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      </button>
-
-      {postState === 'error' && (
-        <p style={{ color: '#F87171', fontSize: 13, margin: 0, paddingLeft: 4 }}>{errorMsg}</p>
-      )}
-
-      <button onClick={downloadPng} style={{
-        display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-        background: '#1C2333', border: '1px solid #2D3748', borderRadius: 14,
-        padding: '16px 20px', cursor: 'pointer', textAlign: 'left',
-      }}>
-        <span style={{ width: 42, height: 42, borderRadius: 10, background: '#2D3748', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <svg width="20" height="20" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        </span>
-        <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>Download PNG</span>
-          <span style={{ color: '#6B7280', fontSize: 13 }}>Save to your device, then share manually</span>
-        </span>
-      </button>
-
-      {auth.connected && (
-        <p style={{ color: '#4B5563', fontSize: 12, margin: 0, textAlign: 'right' }}>
-          <button onClick={disconnect} style={{ background: 'none', border: 'none', color: '#4B5563', fontSize: 12, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>disconnect LinkedIn</button>
-        </p>
-      )}
-    </div>
+  const panel = { background: '#1C1C1E', border: '1px solid #2C2C2E', borderRadius: 16, padding: '20px 20px', width: '100%', maxWidth: 420 }
+  const stepNum = (n) => (
+    <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#3A3A3C', color: '#9CA3AF', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{n}</div>
   )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, padding: '0 16px 32px', width: '100%', maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '0 16px 32px', width: '100%', maxWidth: 900, margin: '0 auto' }}>
 
       {postState === 'done' ? (
-        /* ── Success screen ── */
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, textAlign: 'center', paddingTop: 32 }}>
           <div style={{ fontSize: 56 }}>🎉</div>
-          <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', margin: 0 }}>Posted to LinkedIn!</h2>
-          <p style={{ color: '#9CA3AF', fontSize: 14, margin: 0, maxWidth: 300 }}>Your graphic and caption are live on your profile.</p>
-          {auth.name && (
-            <p style={{ color: '#4B5563', fontSize: 12, margin: 0 }}>
-              Posted as {auth.name} · <button onClick={disconnect} style={{ background: 'none', border: 'none', color: '#4B5563', fontSize: 12, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>disconnect</button>
-            </p>
-          )}
-          {imageDataUrl && (
-            <img src={imageDataUrl} alt="Posted graphic" style={{ width: 240, height: 240, borderRadius: 14, objectFit: 'cover', border: `2px solid ${config.primaryColor}`, boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }} />
-          )}
-          <button onClick={downloadPng} style={{
-            display: 'flex', alignItems: 'center', gap: 12, width: '100%', maxWidth: 400,
-            background: '#1C2333', border: '1px solid #2D3748', borderRadius: 14,
-            padding: '16px 20px', cursor: 'pointer', textAlign: 'left',
-          }}>
-            <span style={{ width: 42, height: 42, borderRadius: 10, background: '#2D3748', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="20" height="20" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            </span>
-            <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>Download PNG</span>
-              <span style={{ color: '#6B7280', fontSize: 13 }}>Save a copy to your device</span>
-            </span>
+          <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', margin: 0 }}>Posted to LinkedIn!</h2>
+          <p style={{ color: '#9CA3AF', fontSize: 14, margin: 0 }}>Your graphic and caption are live on your profile.</p>
+          {auth.name && <p style={{ color: '#4B5563', fontSize: 12, margin: 0 }}>Posted as {auth.name} · <button onClick={disconnect} style={{ background: 'none', border: 'none', color: '#4B5563', fontSize: 12, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>disconnect</button></p>}
+          {imageDataUrl && <img src={imageDataUrl} alt="" style={{ width: 220, height: 220, borderRadius: 12, objectFit: 'cover', boxShadow: '0 12px 40px rgba(0,0,0,0.6)' }} />}
+          <button onClick={downloadPng} style={{ ...panel, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', border: '1px solid #2C2C2E' }}>
+            <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>Download PNG</span>
           </button>
         </div>
 
       ) : postState === 'posting' || (autoPost && auth.loading) ? (
-        /* ── Posting spinner ── */
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, textAlign: 'center', paddingTop: 48 }}>
           <div style={{ fontSize: 40 }}>⏳</div>
           <h2 style={{ fontSize: 22, fontWeight: 700, color: '#fff', margin: 0 }}>Posting to LinkedIn…</h2>
-          <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>Just a moment</p>
         </div>
 
       ) : (
-        /* ── Preview + share ── */
-        <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 32, alignItems: 'flex-start', justifyContent: 'center', width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start', justifyContent: 'center', width: '100%' }}>
 
-          {/* Left: image preview */}
+          {/* Image preview */}
           {imageDataUrl && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Your graphic</span>
-              <img
-                src={imageDataUrl}
-                alt="Your event graphic"
-                style={{ width: 280, height: 280, borderRadius: 16, objectFit: 'cover', border: `2px solid ${config.primaryColor}20`, boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }}
-              />
-            </div>
+            <img src={imageDataUrl} alt="Your graphic" style={{ width: 260, height: 260, borderRadius: 14, objectFit: 'cover', boxShadow: '0 16px 48px rgba(0,0,0,0.7)', flexShrink: 0 }} />
           )}
 
-          {/* Right: caption + action buttons */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, flex: 1, minWidth: 280, maxWidth: 400 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Caption that will be posted</span>
-              <div style={{
-                background: '#111827', border: '1px solid #1F2937', borderRadius: 12,
-                padding: '14px 16px', fontSize: 14, color: '#D1D5DB', lineHeight: 1.6,
-                whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 180, overflowY: 'auto',
-              }}>
-                {caption}
+          {/* Download & Share panel */}
+          <div style={{ ...panel, display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <svg width="18" height="18" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span style={{ color: '#fff', fontWeight: 700, fontSize: 16 }}>Download & Share</span>
               </div>
+              <button onClick={onReset} style={{ background: 'none', border: '1px solid #3A3A3C', borderRadius: 8, color: '#9CA3AF', fontSize: 13, fontWeight: 600, padding: '5px 14px', cursor: 'pointer' }}>Back</button>
             </div>
 
-            {actionButtons}
+            {/* Step 1: Download */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 20, borderBottom: '1px solid #2C2C2E' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {stepNum(1)}
+                <span style={{ color: '#fff', fontWeight: 600, fontSize: 15 }}>Download your image</span>
+              </div>
+              <button onClick={downloadPng} style={{ width: '100%', background: '#F5F5F0', border: 'none', borderRadius: 12, padding: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <svg width="18" height="18" fill="none" stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span style={{ color: '#111', fontWeight: 700, fontSize: 15 }}>Download PNG</span>
+              </button>
+            </div>
+
+            {/* Step 2: Caption */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 20, paddingBottom: 20, borderBottom: '1px solid #2C2C2E' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {stepNum(2)}
+                <span style={{ color: '#fff', fontWeight: 600, fontSize: 15 }}>Copy a caption</span>
+              </div>
+              <div style={{ background: '#2C2C2E', borderRadius: 10, padding: '12px 14px', fontSize: 13, color: '#9CA3AF', lineHeight: 1.6, maxHeight: 90, overflowY: 'auto', wordBreak: 'break-word' }}>
+                {caption}
+              </div>
+              <button onClick={copyCaption} style={{ width: '100%', background: '#2C2C2E', border: 'none', borderRadius: 12, padding: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <svg width="16" height="16" fill="none" stroke={captionCopied ? '#10B981' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span style={{ color: captionCopied ? '#10B981' : '#fff', fontWeight: 700, fontSize: 14 }}>{captionCopied ? 'Copied!' : 'Copy Caption'}</span>
+              </button>
+            </div>
+
+            {/* Step 3: Post on LinkedIn */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {stepNum(3)}
+                <div>
+                  <div style={{ color: '#fff', fontWeight: 600, fontSize: 15 }}>Post on LinkedIn</div>
+                  <div style={{ color: '#6B7280', fontSize: 12 }}>
+                    {auth.connected ? `Connected as ${auth.name}` : 'Post with image & caption directly'}
+                  </div>
+                </div>
+              </div>
+              {postState === 'error' && <p style={{ color: '#F87171', fontSize: 13, margin: 0 }}>{errorMsg}</p>}
+              <button
+                onClick={auth.connected ? doPost : connectLinkedIn}
+                disabled={auth.loading}
+                style={{ width: '100%', background: '#0A66C2', border: 'none', borderRadius: 12, padding: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: auth.loading ? 0.6 : 1 }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+                <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>
+                  {auth.loading ? 'Checking…' : auth.connected ? 'Post to LinkedIn' : 'Connect & Post'}
+                </span>
+              </button>
+              {auth.connected && <button onClick={disconnect} style={{ background: 'none', border: 'none', color: '#4B5563', fontSize: 12, cursor: 'pointer', padding: 0, textAlign: 'right' }}>disconnect LinkedIn</button>}
+            </div>
           </div>
+
         </div>
       )}
 
-      <button onClick={onReset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', fontSize: 14, marginTop: 4 }}>
-        ← Start over
-      </button>
     </div>
   )
 }
