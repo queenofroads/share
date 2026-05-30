@@ -27,17 +27,34 @@ export default async function handler(req, res) {
 
   const { access_token } = tokenData
 
-  // Get user profile
-  const profileRes = await fetch('https://api.linkedin.com/v2/userinfo', {
-    headers: { Authorization: `Bearer ${access_token}` },
-  })
-  const profile = await profileRes.json()
-  const sub = profile.sub
-  const name = profile.name || profile.given_name || 'LinkedIn User'
+  // Get display name from userinfo (OpenID)
+  let name = 'LinkedIn User'
+  let sub = null
+  try {
+    const uiRes = await fetch('https://api.linkedin.com/v2/userinfo', {
+      headers: { Authorization: `Bearer ${access_token}` },
+    })
+    const ui = await uiRes.json()
+    sub = ui.sub || null
+    name = ui.name || ui.given_name || name
+  } catch {}
 
-  // Sign a session token (stores access_token server-side in signed cookie)
+  // Get the classic LinkedIn person ID via /v2/me — more reliable for REST API URN
+  let personId = sub
+  try {
+    const meRes = await fetch('https://api.linkedin.com/v2/me', {
+      headers: { Authorization: `Bearer ${access_token}` },
+    })
+    const me = await meRes.json()
+    if (me.id) personId = me.id
+  } catch {}
+
+  if (!personId) {
+    return res.redirect(`${process.env.APP_URL}/?li_error=1`)
+  }
+
   const sessionToken = jwt.sign(
-    { access_token, sub, name },
+    { access_token, sub: personId, name },
     process.env.JWT_SECRET,
     { expiresIn: '1h' }
   )
@@ -47,6 +64,5 @@ export default async function handler(req, res) {
     `li_session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=3600`
   )
 
-  // Redirect back to app — state is restored from sessionStorage by the React app
   res.redirect(`${process.env.APP_URL}/?li_connected=1`)
 }
