@@ -292,6 +292,7 @@ function Step1({ config, onPhoto }) {
 
 function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
   const [localCaption, setLocalCaption] = useState(() => buildCaption(config.captionTemplate, config, attendee.name))
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     setLocalCaption(buildCaption(config.captionTemplate, config, attendee.name))
@@ -374,10 +375,21 @@ function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
           </div>
 
           <button
-            onClick={() => onNext(localCaption)}
-            style={styles.btn(config.primaryColor)}
+            onClick={async () => {
+              setExporting(true)
+              let dataUrl = null
+              if (graphicRef.current) {
+                try {
+                  dataUrl = await domtoimage.toPng(graphicRef.current, { width: 600, height: 600 })
+                } catch {}
+              }
+              setExporting(false)
+              onNext(localCaption, dataUrl)
+            }}
+            disabled={exporting}
+            style={{ ...styles.btn(config.primaryColor), opacity: exporting ? 0.7 : 1 }}
           >
-            Share on LinkedIn →
+            {exporting ? 'Preparing…' : 'Continue to Share →'}
           </button>
         </div>
       </div>
@@ -387,28 +399,23 @@ function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
 
 // ─── Step 3: Share ────────────────────────────────────────────────
 
-function Step3({ config, caption, graphicRef, onReset }) {
+function Step3({ config, caption, imageDataUrl, onReset }) {
   const [copied, setCopied] = useState(false)
-  const fired = useRef(false)
 
-  useEffect(() => {
-    if (fired.current) return
-    fired.current = true
+  function downloadImage() {
+    if (!imageDataUrl) return
+    const a = document.createElement('a')
+    a.href = imageDataUrl
+    a.download = 'event-share.png'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+  }
 
-    if (graphicRef.current) {
-      domtoimage.toPng(graphicRef.current, { width: 600, height: 600 }).then((dataUrl) => {
-        const a = document.createElement('a')
-        a.href = dataUrl
-        a.download = 'event-share.png'
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-      }).catch(() => {})
-    }
-
+  function openLinkedIn() {
     const encoded = encodeURIComponent(caption)
     window.open(`https://www.linkedin.com/sharing/share-offsite/?text=${encoded}`, '_blank')
-  }, [])
+  }
 
   function copyCaption() {
     navigator.clipboard.writeText(caption).then(() => {
@@ -421,16 +428,51 @@ function Step3({ config, caption, graphicRef, onReset }) {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '55vh', gap: 20, textAlign: 'center', padding: '0 16px' }}>
       <div style={{ fontSize: 64 }}>🎉</div>
       <h2 style={{ fontSize: 32, fontWeight: 800, color: '#fff', margin: 0 }}>You're all set!</h2>
-      <p style={{ color: '#9CA3AF', fontSize: 15, maxWidth: 360, margin: 0 }}>
-        Your image downloaded — attach it in LinkedIn to complete your post.
+      <p style={{ color: '#9CA3AF', fontSize: 15, maxWidth: 380, margin: 0 }}>
+        Download your image, then open LinkedIn to post it with your caption.
       </p>
-      <button
-        onClick={copyCaption}
-        style={{ ...styles.btn(copied ? '#10B981' : config.primaryColor), maxWidth: 220 }}
-      >
-        {copied ? 'Copied ✓' : 'Copy Caption'}
-      </button>
-      <button onClick={onReset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', fontSize: 14, marginTop: 4 }}>
+
+      {/* Preview thumbnail */}
+      {imageDataUrl && (
+        <img
+          src={imageDataUrl}
+          alt="Your event graphic"
+          style={{ width: 160, height: 160, borderRadius: 12, objectFit: 'cover', border: `2px solid ${config.primaryColor}`, boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+        />
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 320 }}>
+        {/* Step A: download */}
+        <button
+          onClick={downloadImage}
+          disabled={!imageDataUrl}
+          style={{ ...styles.btn(config.primaryColor), opacity: imageDataUrl ? 1 : 0.5 }}
+        >
+          ⬇ Download Image
+        </button>
+
+        {/* Step B: open LinkedIn */}
+        <button
+          onClick={openLinkedIn}
+          style={{ ...styles.btn('#0A66C2') }}
+        >
+          Share on LinkedIn →
+        </button>
+
+        {/* Copy caption */}
+        <button
+          onClick={copyCaption}
+          style={{ ...styles.btn(copied ? '#10B981' : '#1F2937') }}
+        >
+          {copied ? 'Caption Copied ✓' : 'Copy Caption'}
+        </button>
+      </div>
+
+      <p style={{ color: '#4B5563', fontSize: 12, maxWidth: 300, margin: 0 }}>
+        Tip: download first, then attach the image manually in the LinkedIn post composer.
+      </p>
+
+      <button onClick={onReset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', fontSize: 14 }}>
         ← Start over
       </button>
     </div>
@@ -530,6 +572,7 @@ export default function App() {
   const [step, setStep] = useState(1)
   const [attendee, setAttendee] = useState({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending' })
   const [shareCaption, setShareCaption] = useState('')
+  const [imageDataUrl, setImageDataUrl] = useState(null)
   const graphicRef = useRef()
 
   function handleConfigChange(newCfg) {
@@ -542,13 +585,15 @@ export default function App() {
     setStep(2)
   }
 
-  function handleShare(caption) {
+  function handleShare(caption, dataUrl) {
     setShareCaption(caption)
+    setImageDataUrl(dataUrl)
     setStep(3)
   }
 
   function handleReset() {
     setAttendee({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending' })
+    setImageDataUrl(null)
     setStep(1)
   }
 
@@ -602,19 +647,13 @@ export default function App() {
               <Step3
                 config={config}
                 caption={shareCaption}
-                graphicRef={graphicRef}
+                imageDataUrl={imageDataUrl}
                 onReset={handleReset}
               />
             )}
           </div>
         )}
 
-        {/* Off-screen graphic for export (always rendered when photo exists) */}
-        {attendee.photoUrl && step >= 2 && (
-          <div style={{ position: 'absolute', left: -9999, top: -9999, pointerEvents: 'none' }} aria-hidden="true">
-            <EventGraphic config={config} attendee={attendee} graphicRef={graphicRef} />
-          </div>
-        )}
       </div>
     </div>
   )
