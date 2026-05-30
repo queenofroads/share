@@ -399,80 +399,107 @@ function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
 
 // ─── Step 3: Share ────────────────────────────────────────────────
 
+function dataUrlToBlob(dataUrl) {
+  const [header, data] = dataUrl.split(',')
+  const mime = header.match(/:(.*?);/)[1]
+  const binary = atob(data)
+  const arr = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i)
+  return new Blob([arr], { type: mime })
+}
+
 function Step3({ config, caption, imageDataUrl, onReset }) {
-  const [copied, setCopied] = useState(false)
+  const [shareState, setShareState] = useState('idle') // idle | sharing | copied | done
+  const [hint, setHint] = useState(null)
 
-  function downloadImage() {
+  async function handleShare() {
     if (!imageDataUrl) return
-    const a = document.createElement('a')
-    a.href = imageDataUrl
-    a.download = 'event-share.png'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-  }
+    setShareState('sharing')
+    const blob = dataUrlToBlob(imageDataUrl)
+    const file = new File([blob], 'event-share.png', { type: 'image/png' })
 
-  function openLinkedIn() {
+    // Mobile: native share sheet (iOS/Android) — image + text handed off together
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], text: caption })
+        setShareState('done')
+        return
+      } catch (e) {
+        if (e.name === 'AbortError') { setShareState('idle'); return }
+        // fall through to clipboard path
+      }
+    }
+
+    // Desktop: copy image to clipboard, then open LinkedIn
+    // User just pastes in the LinkedIn composer — no manual file attach needed
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': blob }),
+      ])
+      setHint('Image copied to clipboard — just paste it in your LinkedIn post.')
+    } catch {
+      // clipboard write not supported — fall back to download
+      const a = document.createElement('a')
+      a.href = imageDataUrl
+      a.download = 'event-share.png'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      setHint('Image downloaded — attach it in your LinkedIn post.')
+    }
+
     const encoded = encodeURIComponent(caption)
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?text=${encoded}`, '_blank')
+    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank')
+    setShareState('done')
   }
 
-  function copyCaption() {
-    navigator.clipboard.writeText(caption).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2500)
-    })
+  async function copyCaption() {
+    await navigator.clipboard.writeText(caption)
+    setShareState('copied')
+    setTimeout(() => setShareState('done'), 2500)
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '55vh', gap: 20, textAlign: 'center', padding: '0 16px' }}>
-      <div style={{ fontSize: 64 }}>🎉</div>
-      <h2 style={{ fontSize: 32, fontWeight: 800, color: '#fff', margin: 0 }}>You're all set!</h2>
-      <p style={{ color: '#9CA3AF', fontSize: 15, maxWidth: 380, margin: 0 }}>
-        Download your image, then open LinkedIn to post it with your caption.
-      </p>
 
-      {/* Preview thumbnail */}
+      {/* Thumbnail */}
       {imageDataUrl && (
         <img
           src={imageDataUrl}
           alt="Your event graphic"
-          style={{ width: 160, height: 160, borderRadius: 12, objectFit: 'cover', border: `2px solid ${config.primaryColor}`, boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+          style={{ width: 180, height: 180, borderRadius: 14, objectFit: 'cover', border: `2px solid ${config.primaryColor}`, boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }}
         />
       )}
 
+      <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', margin: 0 }}>Ready to share!</h2>
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 320 }}>
-        {/* Step A: download */}
+
+        {/* Primary CTA — smart share */}
         <button
-          onClick={downloadImage}
-          disabled={!imageDataUrl}
-          style={{ ...styles.btn(config.primaryColor), opacity: imageDataUrl ? 1 : 0.5 }}
+          onClick={handleShare}
+          disabled={shareState === 'sharing' || !imageDataUrl}
+          style={{ ...styles.btn(shareState === 'done' ? '#10B981' : '#0A66C2'), fontSize: 15, padding: '14px 20px', opacity: (shareState === 'sharing' || !imageDataUrl) ? 0.7 : 1 }}
         >
-          ⬇ Download Image
+          {shareState === 'sharing' ? 'Opening…'
+            : shareState === 'done' ? 'Shared ✓'
+            : '📤 Share on LinkedIn'}
         </button>
 
-        {/* Step B: open LinkedIn */}
-        <button
-          onClick={openLinkedIn}
-          style={{ ...styles.btn('#0A66C2') }}
-        >
-          Share on LinkedIn →
-        </button>
+        {hint && (
+          <p style={{ color: '#9CA3AF', fontSize: 12, margin: 0, padding: '0 4px' }}>{hint}</p>
+        )}
 
         {/* Copy caption */}
         <button
           onClick={copyCaption}
-          style={{ ...styles.btn(copied ? '#10B981' : '#1F2937') }}
+          style={{ ...styles.btn(shareState === 'copied' ? '#10B981' : '#1F2937') }}
         >
-          {copied ? 'Caption Copied ✓' : 'Copy Caption'}
+          {shareState === 'copied' ? 'Caption Copied ✓' : 'Copy Caption'}
         </button>
       </div>
 
-      <p style={{ color: '#4B5563', fontSize: 12, maxWidth: 300, margin: 0 }}>
-        Tip: download first, then attach the image manually in the LinkedIn post composer.
-      </p>
-
-      <button onClick={onReset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', fontSize: 14 }}>
+      <button onClick={onReset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', fontSize: 14, marginTop: 4 }}>
         ← Start over
       </button>
     </div>
