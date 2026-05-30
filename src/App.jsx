@@ -866,16 +866,216 @@ const styles = {
   }),
 }
 
+// ─── Landing Page ─────────────────────────────────────────────────
+
+function LandingPage() {
+  return (
+    <div style={{ minHeight: '100vh', background: '#0A0F1E', fontFamily: "'Inter', sans-serif" }}>
+      <div style={{ borderBottom: '1px solid #1F2937', padding: '14px 24px' }}>
+        <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ color: '#fff', fontWeight: 800, fontSize: 16, letterSpacing: '-0.3px' }}>EventShare</span>
+          <a href="/buy" style={{ background: '#0066FF', color: '#fff', padding: '8px 20px', borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>Create your page →</a>
+        </div>
+      </div>
+      <div style={{ maxWidth: 680, margin: '0 auto', textAlign: 'center', padding: '80px 24px 48px' }}>
+        <div style={{ display: 'inline-block', background: '#0066FF22', border: '1px solid #0066FF55', borderRadius: 99, padding: '4px 14px', fontSize: 12, fontWeight: 700, color: '#60A5FA', letterSpacing: '0.06em', marginBottom: 24, textTransform: 'uppercase' }}>
+          For event organizers
+        </div>
+        <h1 style={{ fontSize: 52, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-1.5px', margin: '0 0 20px' }}>
+          Give every attendee<br />their moment
+        </h1>
+        <p style={{ fontSize: 18, color: '#9CA3AF', lineHeight: 1.6, margin: '0 auto 36px', maxWidth: 480 }}>
+          Branded LinkedIn graphics for your event. Attendees upload their photo — you get the social reach.
+        </p>
+        <a href="/buy" style={{ display: 'inline-block', background: '#0066FF', color: '#fff', padding: '16px 36px', borderRadius: 14, fontWeight: 800, fontSize: 16, textDecoration: 'none', boxShadow: '0 8px 32px #0066FF44' }}>
+          Create your event page →
+        </a>
+        <p style={{ color: '#4B5563', fontSize: 13, marginTop: 14 }}>€99 one-time · 5 min setup · No subscription</p>
+      </div>
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 24px 80px' }}>
+        <h2 style={{ textAlign: 'center', color: '#fff', fontWeight: 800, fontSize: 22, marginBottom: 36 }}>How it works</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+          {[
+            { n: '1', title: 'You configure', desc: 'Set your event name, colors, logo and caption templates in 5 minutes.' },
+            { n: '2', title: 'Attendees upload', desc: 'Share your link. Each attendee uploads their photo and picks a graphic style.' },
+            { n: '3', title: 'They post', desc: 'One tap to share a branded graphic to LinkedIn — your event name front and center.' },
+          ].map(({ n, title, desc }) => (
+            <div key={n} style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 16, padding: 24 }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#0066FF', color: '#fff', fontWeight: 900, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>{n}</div>
+              <div style={{ color: '#fff', fontWeight: 700, fontSize: 15, marginBottom: 8 }}>{title}</div>
+              <div style={{ color: '#6B7280', fontSize: 14, lineHeight: 1.6 }}>{desc}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ textAlign: 'center', marginTop: 48 }}>
+          <a href="/buy" style={{ display: 'inline-block', background: '#0066FF', color: '#fff', padding: '14px 32px', borderRadius: 12, fontWeight: 700, fontSize: 15, textDecoration: 'none' }}>
+            Get started for €99 →
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Buy Page ─────────────────────────────────────────────────────
+
+function BuyPage() {
+  const [form, setForm] = useState({ eventName: '', slug: '', email: '' })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  function slugify(v) {
+    return v.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, slug: slugify(form.slug) }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      window.location.href = data.url
+    } catch (err) {
+      setError(err.message)
+      setLoading(false)
+    }
+  }
+
+  const inp = { width: '100%', boxSizing: 'border-box', background: '#0A0F1E', border: '1.5px solid #374151', borderRadius: 10, padding: '10px 12px', fontSize: 14, color: '#fff', outline: 'none' }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#0A0F1E', fontFamily: "'Inter', sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ width: '100%', maxWidth: 480, marginBottom: 24 }}>
+        <a href="/" style={{ color: '#6B7280', fontSize: 13, textDecoration: 'none' }}>← Back</a>
+      </div>
+      <div style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 20, padding: '32px 28px', width: '100%', maxWidth: 480 }}>
+        <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 22, margin: '0 0 6px' }}>Create your event page</h2>
+        <p style={{ color: '#6B7280', fontSize: 14, margin: '0 0 28px' }}>You'll be taken to Stripe to complete payment. Your event page is ready instantly after.</p>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Event Name</label>
+            <input style={inp} placeholder="ARCTIC15" value={form.eventName} onChange={e => setForm(f => ({ ...f, eventName: e.target.value }))} required />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+              URL Slug <span style={{ color: '#4B5563', fontWeight: 400, textTransform: 'none' }}>— shareevent.vercel.app/e/<strong style={{ color: '#6B7280' }}>this-part</strong></span>
+            </label>
+            <input style={{ ...inp, fontFamily: 'monospace' }} placeholder="arctic15" value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} required />
+            {form.slug && <div style={{ fontSize: 12, color: '#4B5563', marginTop: 4 }}>shareevent.vercel.app/e/{slugify(form.slug)}</div>}
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Your Email</label>
+            <input type="email" style={inp} placeholder="you@example.com" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
+          </div>
+          {error && <p style={{ color: '#F87171', fontSize: 13, margin: 0 }}>{error}</p>}
+          <button type="submit" disabled={loading} style={{ background: '#0066FF', border: 'none', borderRadius: 12, padding: '14px', color: '#fff', fontWeight: 700, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: 4 }}>
+            {loading ? 'Redirecting to payment…' : 'Pay & create page →'}
+          </button>
+          <p style={{ color: '#4B5563', fontSize: 12, textAlign: 'center', margin: 0 }}>Secure payment via Stripe · One-time · No subscription</p>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// ─── Success Page ─────────────────────────────────────────────────
+
+function SuccessPage() {
+  const [data, setData] = useState(null)
+  const [error, setError] = useState(null)
+  const [copied, setCopied] = useState(null)
+
+  useEffect(() => {
+    const sessionId = new URLSearchParams(window.location.search).get('session_id')
+    if (!sessionId) { setError('No session found.'); return }
+    let attempts = 0
+    const tryFetch = async () => {
+      try {
+        const res = await fetch(`/api/stripe/session?id=${sessionId}`)
+        const d = await res.json()
+        if (!res.ok) {
+          if (d.error?.includes('not found yet') && attempts < 6) { attempts++; setTimeout(tryFetch, 2000); return }
+          setError(d.error)
+          return
+        }
+        setData(d)
+      } catch { setError('Something went wrong loading your event details.') }
+    }
+    tryFetch()
+  }, [])
+
+  async function copy(text, key) {
+    await navigator.clipboard.writeText(text)
+    setCopied(key)
+    setTimeout(() => setCopied(null), 2500)
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#0A0F1E', fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ width: '100%', maxWidth: 520, textAlign: 'center' }}>
+        {!data && !error && <p style={{ color: '#9CA3AF', fontSize: 16 }}>Setting up your event page…</p>}
+        {error && <p style={{ color: '#F87171', fontSize: 15 }}>{error}</p>}
+        {data && (
+          <>
+            <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
+            <h2 style={{ color: '#fff', fontWeight: 900, fontSize: 28, margin: '0 0 8px' }}>Your event page is live!</h2>
+            <p style={{ color: '#9CA3AF', fontSize: 15, margin: '0 0 36px' }}>{data.eventName}</p>
+            {[
+              { key: 'attendee', label: 'Share with attendees', url: data.attendeeUrl, desc: 'Send this to everyone at your event' },
+              { key: 'setup', label: 'Your organizer link', url: data.setupUrl, desc: 'Keep this private — it\'s how you edit your config' },
+            ].map(({ key, label, url, desc }) => (
+              <div key={key} style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 16, padding: '20px', marginBottom: 16, textAlign: 'left' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{label}</div>
+                <div style={{ fontFamily: 'monospace', fontSize: 13, color: '#60A5FA', wordBreak: 'break-all', marginBottom: 8 }}>{url}</div>
+                <div style={{ fontSize: 12, color: '#4B5563', marginBottom: 12 }}>{desc}</div>
+                <button onClick={() => copy(url, key)} style={{ background: '#1F2937', border: 'none', borderRadius: 8, padding: '8px 16px', color: copied === key ? '#10B981' : '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                  {copied === key ? 'Copied!' : 'Copy link'}
+                </button>
+              </div>
+            ))}
+            <a href={data.setupUrl} style={{ display: 'inline-block', marginTop: 8, background: '#0066FF', color: '#fff', padding: '12px 28px', borderRadius: 12, fontWeight: 700, fontSize: 15, textDecoration: 'none' }}>
+              Set up your event now →
+            </a>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── App Root ─────────────────────────────────────────────────────
 
 const SS_KEY = 'li_share_state'
 
-// Organizer mode: visit shareevent.vercel.app/setup
-// Attendee mode:  visit shareevent.vercel.app
-const IS_ORGANIZER = window.location.pathname.startsWith('/setup')
+const _path = window.location.pathname
+const _eventMatch = _path.match(/^\/e\/([^/]+)(\/setup)?/)
+const EVENT_SLUG = _eventMatch?.[1] || null
+const IS_ORGANIZER = !!_eventMatch?.[2]
+const _page = !_eventMatch
+  ? (_path === '/buy' ? 'buy' : _path === '/success' ? 'success' : 'landing')
+  : 'event'
 
 export default function App() {
-  const [config, setConfig] = useState(loadConfig)
+  if (_page === 'landing') return <LandingPage />
+  if (_page === 'buy') return <BuyPage />
+  if (_page === 'success') return <SuccessPage />
+  return <EventApp />
+}
+
+function EventApp() {
+  const SETUP_KEY = new URLSearchParams(window.location.search).get('key')
+
+  const [config, setConfig] = useState(() => {
+    const cached = localStorage.getItem(`event-config:${EVENT_SLUG}`)
+    if (cached) try { return { ...DEFAULT_CONFIG, ...JSON.parse(cached) } } catch {}
+    return DEFAULT_CONFIG
+  })
   const [step, setStep] = useState(1)
   const [attendee, setAttendee] = useState({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending', style: 'frame', photoOffset: { x: 50, y: 50 } })
   const [shareCaption, setShareCaption] = useState('')
@@ -883,7 +1083,20 @@ export default function App() {
   const [autoPost, setAutoPost] = useState(false)
   const graphicRef = useRef()
 
-  // On mount: returning from LinkedIn OAuth → restore state and auto-post
+  // Fetch config from API on mount
+  useEffect(() => {
+    fetch(`/api/config/${EVENT_SLUG}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.config) {
+          setConfig(d.config)
+          localStorage.setItem(`event-config:${EVENT_SLUG}`, JSON.stringify(d.config))
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  // Return from LinkedIn OAuth
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('li_connected') !== '1') return
@@ -902,11 +1115,18 @@ export default function App() {
     } catch {}
   }, [])
 
-  function handleConfigChange(newCfg) { setConfig(newCfg); saveConfig(newCfg) }
-  function handleStyle(key, advance) {
-    setAttendee(p => ({ ...p, style: key }))
-    if (advance) setStep(2)
+  function handleConfigChange(newCfg) {
+    setConfig(newCfg)
+    localStorage.setItem(`event-config:${EVENT_SLUG}`, JSON.stringify(newCfg))
+    if (EVENT_SLUG && SETUP_KEY) {
+      fetch(`/api/config/${EVENT_SLUG}?key=${encodeURIComponent(SETUP_KEY)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: newCfg }),
+      }).catch(() => {})
+    }
   }
+  function handleStyle(key, advance) { setAttendee(p => ({ ...p, style: key })); if (advance) setStep(2) }
   function handlePhoto(url) { setAttendee(p => ({ ...p, photoUrl: url })); setStep(3) }
   function handleShare(caption, dataUrl) { setShareCaption(caption); setImageDataUrl(dataUrl); setStep(4) }
   function handleReset() { setAttendee({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending', style: 'frame', photoOffset: { x: 50, y: 50 } }); setImageDataUrl(null); setAutoPost(false); setStep(1) }
@@ -919,9 +1139,7 @@ export default function App() {
         <div style={{ borderBottom: '1px solid #1F2937', padding: '12px 16px' }}>
           <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {config.logoUrl && (
-                <img src={config.logoUrl} alt="logo" style={{ height: 28, width: 'auto', objectFit: 'contain' }} />
-              )}
+              {config.logoUrl && <img src={config.logoUrl} alt="logo" style={{ height: 28, width: 'auto', objectFit: 'contain' }} />}
               <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>{config.eventName}</span>
               {config.tagline && <span style={{ color: '#6B7280', fontSize: 12 }}>· {config.tagline}</span>}
             </div>
@@ -935,76 +1153,50 @@ export default function App() {
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px' }}>
 
         {IS_ORGANIZER ? (
-          /* ── Organizer setup page ── */
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-              <h2 style={{ color: '#fff', fontWeight: 700, fontSize: 18, margin: 0 }}>Configure Your Event</h2>
-              <a
-                href="/"
-                target="_blank"
-                rel="noopener"
-                style={{ fontSize: 13, color: config.primaryColor, fontWeight: 600, textDecoration: 'none', border: `1px solid ${config.primaryColor}`, borderRadius: 8, padding: '6px 14px' }}
-              >
-                Preview attendee view ↗
-              </a>
-            </div>
-            <OrganizerPanel config={config} onChange={handleConfigChange} onDone={() => {}} />
+            {!SETUP_KEY ? (
+              <div style={{ textAlign: 'center', paddingTop: 60 }}>
+                <p style={{ color: '#F87171', fontSize: 16 }}>Invalid setup link — please use the organizer URL you received after payment.</p>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                  <h2 style={{ color: '#fff', fontWeight: 700, fontSize: 18, margin: 0 }}>Configure Your Event</h2>
+                  <a href={`/e/${EVENT_SLUG}`} target="_blank" rel="noopener" style={{ fontSize: 13, color: config.primaryColor, fontWeight: 600, textDecoration: 'none', border: `1px solid ${config.primaryColor}`, borderRadius: 8, padding: '6px 14px' }}>
+                    Preview attendee view ↗
+                  </a>
+                </div>
+                <OrganizerPanel config={config} onChange={handleConfigChange} onDone={() => {}} />
+              </>
+            )}
           </div>
 
         ) : (
-          /* ── Attendee flow ── */
           <div>
-            {/* Event hero branding */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, paddingBottom: 28, paddingTop: 8 }}>
-              {config.logoUrl && (
-                <img src={config.logoUrl} alt="logo" style={{ height: 64, width: 'auto', objectFit: 'contain', maxWidth: 260 }} />
-              )}
+              {config.logoUrl && <img src={config.logoUrl} alt="logo" style={{ height: 64, width: 'auto', objectFit: 'contain', maxWidth: 260 }} />}
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.1, fontFamily: `'${config.fontFamily || 'Inter'}', sans-serif` }}>
                   {config.eventName}
                 </div>
-                {config.tagline && (
-                  <div style={{ fontSize: 14, color: config.primaryColor, fontWeight: 600, marginTop: 4, letterSpacing: '0.03em' }}>
-                    {config.tagline}
-                  </div>
-                )}
+                {config.tagline && <div style={{ fontSize: 14, color: config.primaryColor, fontWeight: 600, marginTop: 4 }}>{config.tagline}</div>}
                 {(config.date || config.location) && (
-                  <div style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
-                    {[config.date, config.location].filter(Boolean).join(' · ')}
-                  </div>
+                  <div style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>{[config.date, config.location].filter(Boolean).join(' · ')}</div>
                 )}
               </div>
             </div>
             <ProgressBar step={step} config={config} />
             {step === 1 && <Step0 config={config} selectedStyle={attendee.style} onStyle={handleStyle} />}
             {step === 2 && <Step1 config={config} onPhoto={handlePhoto} />}
-            {step === 3 && (
-              <Step2
-                config={config}
-                attendee={attendee}
-                setAttendee={setAttendee}
-                graphicRef={graphicRef}
-                onNext={handleShare}
-              />
-            )}
-            {step === 4 && (
-              <Step3
-                config={config}
-                caption={shareCaption}
-                imageDataUrl={imageDataUrl}
-                attendee={attendee}
-                autoPost={autoPost}
-                onReset={handleReset}
-              />
-            )}
+            {step === 3 && <Step2 config={config} attendee={attendee} setAttendee={setAttendee} graphicRef={graphicRef} onNext={handleShare} />}
+            {step === 4 && <Step3 config={config} caption={shareCaption} imageDataUrl={imageDataUrl} attendee={attendee} autoPost={autoPost} onReset={handleReset} />}
           </div>
         )}
 
       </div>
 
-      {/* Footer */}
       <div style={{ borderTop: '1px solid #1F2937', marginTop: 40, padding: '16px 24px', textAlign: 'center' }}>
-        <a href="/privacy.html" target="_blank" rel="noopener" style={{ color: '#4B5563', fontSize: 12, textDecoration: 'none', fontFamily: "'Inter', sans-serif" }}>
+        <a href="/privacy.html" target="_blank" rel="noopener" style={{ color: '#4B5563', fontSize: 12, textDecoration: 'none' }}>
           Privacy Policy
         </a>
       </div>
