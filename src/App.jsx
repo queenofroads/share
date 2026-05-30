@@ -774,16 +774,19 @@ export default function App() {
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        {/* Organizer Panel — only visible in organizer mode */}
+        {/* Organizer Panel — collapsible, only in organizer mode */}
         {IS_ORGANIZER && showOrganizerPanel && (
           <div>
             <h2 style={{ color: '#fff', fontWeight: 700, fontSize: 18, margin: '0 0 14px' }}>Configure Your Event</h2>
             <OrganizerPanel config={config} onChange={handleConfigChange} onDone={() => setShowOrganizerPanel(false)} />
+            <div style={{ borderTop: '1px solid #1F2937', margin: '24px 0 8px', paddingTop: 8 }}>
+              <p style={{ color: '#6B7280', fontSize: 13, margin: 0 }}>↓ Attendee preview below</p>
+            </div>
           </div>
         )}
 
-        {/* Attendee flow — always shown when organizer panel is hidden */}
-        {!showOrganizerPanel && (
+        {/* Attendee flow — always visible */}
+        {true && (
           <div>
             <ProgressBar step={step} config={config} />
             {step === 1 && <Step1 config={config} onPhoto={handlePhoto} />}
