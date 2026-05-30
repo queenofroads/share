@@ -711,7 +711,6 @@ const IS_ORGANIZER = window.location.pathname.startsWith('/setup')
 
 export default function App() {
   const [config, setConfig] = useState(loadConfig)
-  const [showOrganizerPanel, setShowOrganizerPanel] = useState(IS_ORGANIZER)
   const [step, setStep] = useState(1)
   const [attendee, setAttendee] = useState({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending' })
   const [shareCaption, setShareCaption] = useState('')
@@ -733,7 +732,6 @@ export default function App() {
       if (saved.attendee) setAttendee(saved.attendee)
       setShareCaption(saved.caption)
       setImageDataUrl(saved.imageDataUrl || null)
-      setShowOrganizerPanel(false)
       setAutoPost(true)
       setStep(3)
     } catch {}
@@ -755,38 +753,37 @@ export default function App() {
               <img src={config.logoUrl} alt="logo" style={{ height: 28, width: 'auto', objectFit: 'contain' }} />
             )}
             <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>{config.eventName}</span>
-            {config.tagline && (
-              <span style={{ color: '#6B7280', fontSize: 12 }}>· {config.tagline}</span>
-            )}
+            {config.tagline && <span style={{ color: '#6B7280', fontSize: 12 }}>· {config.tagline}</span>}
           </div>
-
-          {/* Only show organizer controls when in organizer mode */}
           {IS_ORGANIZER && (
-            <button
-              onClick={() => setShowOrganizerPanel(v => !v)}
-              style={{ fontSize: 12, color: '#9CA3AF', border: '1px solid #374151', borderRadius: 8, padding: '6px 12px', background: 'transparent', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
-            >
-              {showOrganizerPanel ? 'Hide Setup ↑' : '⚙ Organizer Setup'}
-            </button>
+            <span style={{ fontSize: 11, color: config.primaryColor, border: `1px solid ${config.primaryColor}`, borderRadius: 6, padding: '3px 10px', fontWeight: 700, letterSpacing: '0.06em' }}>
+              ORGANIZER
+            </span>
           )}
         </div>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px' }}>
 
-        {/* Organizer Panel — collapsible, only in organizer mode */}
-        {IS_ORGANIZER && showOrganizerPanel && (
-          <div>
-            <h2 style={{ color: '#fff', fontWeight: 700, fontSize: 18, margin: '0 0 14px' }}>Configure Your Event</h2>
-            <OrganizerPanel config={config} onChange={handleConfigChange} onDone={() => setShowOrganizerPanel(false)} />
-            <div style={{ borderTop: '1px solid #1F2937', margin: '24px 0 8px', paddingTop: 8 }}>
-              <p style={{ color: '#6B7280', fontSize: 13, margin: 0 }}>↓ Attendee preview below</p>
+        {IS_ORGANIZER ? (
+          /* ── Organizer setup page ── */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+              <h2 style={{ color: '#fff', fontWeight: 700, fontSize: 18, margin: 0 }}>Configure Your Event</h2>
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener"
+                style={{ fontSize: 13, color: config.primaryColor, fontWeight: 600, textDecoration: 'none', border: `1px solid ${config.primaryColor}`, borderRadius: 8, padding: '6px 14px' }}
+              >
+                Preview attendee view ↗
+              </a>
             </div>
+            <OrganizerPanel config={config} onChange={handleConfigChange} onDone={() => {}} />
           </div>
-        )}
 
-        {/* Attendee flow — always visible */}
-        {true && (
+        ) : (
+          /* ── Attendee flow ── */
           <div>
             <ProgressBar step={step} config={config} />
             {step === 1 && <Step1 config={config} onPhoto={handlePhoto} />}
