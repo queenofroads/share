@@ -263,20 +263,22 @@ function EventGraphic({ config, attendee, graphicRef }) {
 
   // ── SPLIT ──────────────────────────────────────────────────────────
   if (style === 'split') return (
-    <div ref={graphicRef} style={{ ...root, display: 'flex' }}>
-      <div style={{ position: 'relative', width: '55%', height: '100%', overflow: 'hidden', flexShrink: 0 }}>
-        <PhotoImg />
-        <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.35))' }} />
-      </div>
-      <div style={{ flex: 1, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px 28px', overflow: 'hidden' }}>
-        <div><LogoOrName color="#fff" height={42} /></div>
-        <div>
-          <div style={{ display: 'inline-block', background: 'rgba(0,0,0,0.25)', color: '#fff', fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>{attendee.badge}</div>
-          <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{badgeLabel}<br />{config.eventName}</div>
+    <div ref={graphicRef} style={root}>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
+        <div style={{ position: 'relative', width: '55%', height: '100%', overflow: 'hidden', flexShrink: 0 }}>
+          <PhotoImg />
+          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.35))' }} />
         </div>
-        <div>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>{config.location}</div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>{config.date}</div>
+        <div style={{ flex: 1, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px 28px', overflow: 'hidden' }}>
+          <div><LogoOrName color="#fff" height={42} /></div>
+          <div>
+            <div style={{ display: 'inline-block', background: 'rgba(0,0,0,0.25)', color: '#fff', fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>{attendee.badge}</div>
+            <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{badgeLabel}<br />{config.eventName}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>{config.location}</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>{config.date}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -284,21 +286,23 @@ function EventGraphic({ config, attendee, graphicRef }) {
 
   // ── CIRCLE ─────────────────────────────────────────────────────────
   if (style === 'circle') return (
-    <div ref={graphicRef} style={{ ...root, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: primary }} />
-      <div style={{ marginTop: 32, zIndex: 2 }}><LogoOrName color={primary} height={42} /></div>
-      <div style={{ marginTop: 28, width: 260, height: 260, borderRadius: '50%', overflow: 'hidden', border: `6px solid ${primary}`, flexShrink: 0, zIndex: 2, boxShadow: `0 0 0 4px ${bg}, 0 0 0 10px ${primary}55` }}>
-        {attendee.photoUrl
-          ? <img src={attendee.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: objPos, display: 'block' }} />
-          : <div style={{ width: '100%', height: '100%', background: '#1F2937', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 80, color: '#374151' }}>?</span></div>
-        }
+    <div ref={graphicRef} style={root}>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: primary }} />
+        <div style={{ marginTop: 32, zIndex: 2 }}><LogoOrName color={primary} height={42} /></div>
+        <div style={{ marginTop: 28, width: 260, height: 260, borderRadius: '50%', overflow: 'hidden', border: `6px solid ${primary}`, flexShrink: 0, zIndex: 2, boxShadow: `0 0 0 4px ${bg}, 0 0 0 10px ${primary}55` }}>
+          {attendee.photoUrl
+            ? <img src={attendee.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: objPos, display: 'block' }} />
+            : <div style={{ width: '100%', height: '100%', background: '#1F2937', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 80, color: '#374151' }}>?</span></div>
+          }
+        </div>
+        <div style={{ marginTop: 24, textAlign: 'center', padding: '0 40px', zIndex: 2 }}>
+          <div style={{ display: 'inline-block', background: primary, color: '#fff', fontSize: 11, fontWeight: 800, padding: '4px 14px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>{attendee.badge}</div>
+          <div style={{ fontSize: 36, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{badgeLabel}<br />{config.eventName}</div>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 10, fontWeight: 500 }}>{config.location} · {config.date}</div>
+        </div>
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: primary }} />
       </div>
-      <div style={{ marginTop: 24, textAlign: 'center', padding: '0 40px', zIndex: 2 }}>
-        <div style={{ display: 'inline-block', background: primary, color: '#fff', fontSize: 11, fontWeight: 800, padding: '4px 14px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>{attendee.badge}</div>
-        <div style={{ fontSize: 36, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{badgeLabel}<br />{config.eventName}</div>
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 10, fontWeight: 500 }}>{config.location} · {config.date}</div>
-      </div>
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: primary }} />
     </div>
   )
 
