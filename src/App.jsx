@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import domtoimage from 'dom-to-image-more'
+import html2canvas from 'html2canvas'
 import './index.css'
 
 const STORAGE_KEY = 'event-share-config'
@@ -403,7 +403,12 @@ function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
               let dataUrl = null
               if (graphicRef.current) {
                 try {
-                  dataUrl = await domtoimage.toPng(graphicRef.current, { width: 600, height: 600 })
+                  const canvas = await html2canvas(graphicRef.current, {
+                    width: 600, height: 600, scale: 1,
+                    useCORS: true, allowTaint: true, backgroundColor: null,
+                    logging: false,
+                  })
+                  dataUrl = canvas.toDataURL('image/png')
                 } catch {}
               }
               setExporting(false)
