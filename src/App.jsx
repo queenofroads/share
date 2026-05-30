@@ -326,16 +326,6 @@ function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
         {/* Fields */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1, minWidth: 260 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={styles.label}>Your Name</label>
-            <input style={styles.input} placeholder="Jane Smith" value={attendee.name} onChange={(e) => update('name', e.target.value)} />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={styles.label}>Title + Company</label>
-            <input style={styles.input} placeholder="Founder @ Acme Inc" value={attendee.titleCompany} onChange={(e) => update('titleCompany', e.target.value)} />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <label style={styles.label}>Badge</label>
             <div style={{ display: 'flex', gap: 8 }}>
               {['Attending', 'Speaking', 'Partner'].map((b) => (
