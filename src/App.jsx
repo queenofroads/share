@@ -409,55 +409,58 @@ function dataUrlToBlob(dataUrl) {
 }
 
 function Step3({ config, caption, imageDataUrl, onReset }) {
-  const [shareState, setShareState] = useState('idle') // idle | sharing | copied | done
-  const [hint, setHint] = useState(null)
+  const [imgState, setImgState] = useState('idle')   // idle | copied | downloaded
+  const [captionCopied, setCaptionCopied] = useState(false)
 
-  async function handleShare() {
-    if (!imageDataUrl) return
-    setShareState('sharing')
-    const blob = dataUrlToBlob(imageDataUrl)
-    const file = new File([blob], 'event-share.png', { type: 'image/png' })
+  const blob = imageDataUrl ? dataUrlToBlob(imageDataUrl) : null
+  const file = blob ? new File([blob], 'event-share.png', { type: 'image/png' }) : null
 
-    // Mobile: native share sheet (iOS/Android) — image + text handed off together
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], text: caption })
-        setShareState('done')
-        return
-      } catch (e) {
-        if (e.name === 'AbortError') { setShareState('idle'); return }
-        // fall through to clipboard path
-      }
-    }
+  // On mobile with Web Share API — single button hands off image + text to native share sheet
+  const canNativeShare = file && navigator.canShare && navigator.canShare({ files: [file] })
 
-    // Desktop: copy image to clipboard, then open LinkedIn
-    // User just pastes in the LinkedIn composer — no manual file attach needed
+  async function handleNativeShare() {
     try {
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob }),
-      ])
-      setHint('Image copied to clipboard — just paste it in your LinkedIn post.')
-    } catch {
-      // clipboard write not supported — fall back to download
-      const a = document.createElement('a')
-      a.href = imageDataUrl
-      a.download = 'event-share.png'
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      setHint('Image downloaded — attach it in your LinkedIn post.')
+      await navigator.share({ files: [file], text: caption })
+    } catch (e) {
+      if (e.name !== 'AbortError') handleGetImage() // fall through
     }
+  }
 
+  async function handleGetImage() {
+    // Try clipboard first
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+      setImgState('copied')
+      return
+    } catch {}
+    // Fallback: download
+    const a = document.createElement('a')
+    a.href = imageDataUrl
+    a.download = 'event-share.png'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    setImgState('downloaded')
+  }
+
+  function openLinkedIn() {
     const encoded = encodeURIComponent(caption)
     window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encoded}`, '_blank')
-    setShareState('done')
   }
 
   async function copyCaption() {
     await navigator.clipboard.writeText(caption)
-    setShareState('copied')
-    setTimeout(() => setShareState('done'), 2500)
+    setCaptionCopied(true)
+    setTimeout(() => setCaptionCopied(false), 2500)
   }
+
+  const imgLabel =
+    imgState === 'copied' ? '✓ Image Copied to Clipboard' :
+    imgState === 'downloaded' ? '✓ Image Downloaded' :
+    '1. Copy / Save Image'
+
+  const imgColor =
+    imgState !== 'idle' ? '#10B981' : config.primaryColor
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '55vh', gap: 20, textAlign: 'center', padding: '0 16px' }}>
@@ -471,33 +474,47 @@ function Step3({ config, caption, imageDataUrl, onReset }) {
         />
       )}
 
-      <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', margin: 0 }}>Ready to share!</h2>
+      <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', margin: 0 }}>Ready to share!</h2>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 320 }}>
+      {canNativeShare ? (
+        // ── Mobile: one button, native share sheet ──
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 320 }}>
+          <button onClick={handleNativeShare} style={styles.btn('#0A66C2')}>
+            📤 Share on LinkedIn
+          </button>
+          <button onClick={copyCaption} style={styles.btn(captionCopied ? '#10B981' : '#1F2937')}>
+            {captionCopied ? 'Caption Copied ✓' : 'Copy Caption'}
+          </button>
+        </div>
+      ) : (
+        // ── Desktop: two explicit steps ──
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 340 }}>
+          {/* Step 1 */}
+          <button onClick={handleGetImage} style={styles.btn(imgColor)}>
+            {imgLabel}
+          </button>
 
-        {/* Primary CTA — smart share */}
-        <button
-          onClick={handleShare}
-          disabled={shareState === 'sharing' || !imageDataUrl}
-          style={{ ...styles.btn(shareState === 'done' ? '#10B981' : '#0A66C2'), fontSize: 15, padding: '14px 20px', opacity: (shareState === 'sharing' || !imageDataUrl) ? 0.7 : 1 }}
-        >
-          {shareState === 'sharing' ? 'Opening…'
-            : shareState === 'done' ? 'Shared ✓'
-            : '📤 Share on LinkedIn'}
-        </button>
+          {imgState === 'copied' && (
+            <p style={{ color: '#9CA3AF', fontSize: 12, margin: '-4px 0 0', padding: '0 4px' }}>
+              Image is in your clipboard — paste it in LinkedIn with Ctrl+V / Cmd+V
+            </p>
+          )}
+          {imgState === 'downloaded' && (
+            <p style={{ color: '#9CA3AF', fontSize: 12, margin: '-4px 0 0', padding: '0 4px' }}>
+              Image saved to Downloads — attach it using the photo icon in LinkedIn
+            </p>
+          )}
 
-        {hint && (
-          <p style={{ color: '#9CA3AF', fontSize: 12, margin: 0, padding: '0 4px' }}>{hint}</p>
-        )}
+          {/* Step 2 */}
+          <button onClick={openLinkedIn} style={{ ...styles.btn('#0A66C2'), marginTop: 4 }}>
+            2. Open LinkedIn →
+          </button>
 
-        {/* Copy caption */}
-        <button
-          onClick={copyCaption}
-          style={{ ...styles.btn(shareState === 'copied' ? '#10B981' : '#1F2937') }}
-        >
-          {shareState === 'copied' ? 'Caption Copied ✓' : 'Copy Caption'}
-        </button>
-      </div>
+          <button onClick={copyCaption} style={styles.btn(captionCopied ? '#10B981' : '#1F2937')}>
+            {captionCopied ? 'Caption Copied ✓' : 'Copy Caption'}
+          </button>
+        </div>
+      )}
 
       <button onClick={onReset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', fontSize: 14, marginTop: 4 }}>
         ← Start over
