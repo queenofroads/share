@@ -404,12 +404,14 @@ function dataUrlToBlob(dataUrl) {
   return new Blob([arr], { type: mime })
 }
 
-function Step3({ config, caption, imageDataUrl, attendee, onReset }) {
+function Step3({ config, caption, imageDataUrl, attendee, autoPost, onReset }) {
   const [auth, setAuth] = useState({ loading: true, connected: false, name: null })
-  const [postState, setPostState] = useState('idle') // idle | posting | done | error
+  const [postState, setPostState] = useState('idle')
   const [errorMsg, setErrorMsg] = useState(null)
   const [captionCopied, setCaptionCopied] = useState(false)
+  const autoPostFired = useRef(false)
 
+  // Check auth status on mount
   useEffect(() => {
     fetch('/api/auth/status')
       .then(r => r.json())
@@ -417,22 +419,20 @@ function Step3({ config, caption, imageDataUrl, attendee, onReset }) {
       .catch(() => setAuth({ loading: false, connected: false, name: null }))
   }, [])
 
-  function connectLinkedIn() {
-    // Save current state to sessionStorage so we can restore after OAuth redirect
-    try {
-      sessionStorage.setItem(SS_KEY, JSON.stringify({ imageDataUrl, caption, attendee }))
-    } catch {}
-    // Full-page redirect — works on all browsers including mobile
-    window.location.href = '/api/auth/linkedin'
-  }
+  // Auto-post as soon as we know we're connected (returning from OAuth)
+  useEffect(() => {
+    if (!autoPost || autoPostFired.current || auth.loading) return
+    if (auth.connected) {
+      autoPostFired.current = true
+      doPost()
+    } else {
+      // Auth check failed after OAuth — show error
+      setErrorMsg('LinkedIn connection failed. Please try again.')
+      setPostState('error')
+    }
+  }, [autoPost, auth.loading, auth.connected])
 
-  async function disconnect() {
-    await fetch('/api/auth/disconnect')
-    setAuth({ loading: false, connected: false, name: null })
-    setPostState('idle')
-  }
-
-  async function postToLinkedIn() {
+  async function doPost() {
     setPostState('posting')
     setErrorMsg(null)
     try {
@@ -445,9 +445,28 @@ function Step3({ config, caption, imageDataUrl, attendee, onReset }) {
       if (!res.ok) throw new Error(data.error || 'Post failed')
       setPostState('done')
     } catch (e) {
-      setErrorMsg(e.message || 'Something went wrong')
+      setErrorMsg(e.message || 'Something went wrong. Please try again.')
       setPostState('error')
     }
+  }
+
+  function connectLinkedIn() {
+    try {
+      sessionStorage.setItem(SS_KEY, JSON.stringify({ imageDataUrl, caption, attendee }))
+    } catch (e) {
+      // If imageDataUrl is too large, store without it and re-export on return
+      try {
+        sessionStorage.setItem(SS_KEY, JSON.stringify({ caption, attendee }))
+      } catch {}
+    }
+    window.location.href = '/api/auth/linkedin'
+  }
+
+  async function disconnect() {
+    await fetch('/api/auth/disconnect')
+    setAuth({ loading: false, connected: false, name: null })
+    setPostState('idle')
+    setErrorMsg(null)
   }
 
   async function copyCaption() {
@@ -459,20 +478,27 @@ function Step3({ config, caption, imageDataUrl, attendee, onReset }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '55vh', gap: 20, textAlign: 'center', padding: '0 16px' }}>
 
-      {/* Thumbnail */}
       {imageDataUrl && (
-        <img
-          src={imageDataUrl}
-          alt="Your event graphic"
-          style={{ width: 180, height: 180, borderRadius: 14, objectFit: 'cover', border: `2px solid ${config.primaryColor}`, boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }}
-        />
+        <img src={imageDataUrl} alt="Your event graphic"
+          style={{ width: 180, height: 180, borderRadius: 14, objectFit: 'cover', border: `2px solid ${config.primaryColor}`, boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }} />
       )}
 
       {postState === 'done' ? (
         <>
-          <div style={{ fontSize: 52 }}>🎉</div>
-          <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', margin: 0 }}>Posted to LinkedIn!</h2>
-          <p style={{ color: '#9CA3AF', fontSize: 14, margin: 0 }}>Your graphic is live on your profile.</p>
+          <div style={{ fontSize: 56 }}>🎉</div>
+          <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', margin: 0 }}>Posted to LinkedIn!</h2>
+          <p style={{ color: '#9CA3AF', fontSize: 14, margin: 0, maxWidth: 300 }}>Your graphic and caption are live on your profile.</p>
+          {auth.name && (
+            <p style={{ color: '#4B5563', fontSize: 12, margin: 0 }}>
+              Posted as {auth.name} · <button onClick={disconnect} style={{ background: 'none', border: 'none', color: '#4B5563', fontSize: 12, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>disconnect</button>
+            </p>
+          )}
+        </>
+      ) : postState === 'posting' || (autoPost && auth.loading) ? (
+        <>
+          <div style={{ fontSize: 40 }}>⏳</div>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#fff', margin: 0 }}>Posting to LinkedIn…</h2>
+          <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>Just a moment</p>
         </>
       ) : (
         <>
@@ -480,36 +506,25 @@ function Step3({ config, caption, imageDataUrl, attendee, onReset }) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 340 }}>
             {auth.loading ? (
-              <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>Checking LinkedIn connection…</p>
+              <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>Checking connection…</p>
             ) : !auth.connected ? (
               <>
-                <button onClick={connectLinkedIn} style={styles.btn('#0A66C2')}>
-                  Connect LinkedIn to Post
+                <button onClick={connectLinkedIn} style={{ ...styles.btn('#0A66C2'), fontSize: 15, padding: '14px 20px' }}>
+                  Connect LinkedIn & Post
                 </button>
                 <p style={{ color: '#6B7280', fontSize: 12, margin: 0 }}>
-                  A popup will open — log in and allow access. Your post will include the image automatically.
+                  You'll log in once — the post goes up automatically when you return.
                 </p>
               </>
             ) : (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981' }} />
-                  <span style={{ color: '#9CA3AF', fontSize: 13 }}>
-                    Connected as <strong style={{ color: '#fff' }}>{auth.name}</strong>
-                  </span>
-                  <button onClick={disconnect} style={{ background: 'none', border: 'none', color: '#4B5563', fontSize: 12, cursor: 'pointer', padding: 0 }}>
-                    (disconnect)
-                  </button>
-                </div>
-
-                <button
-                  onClick={postToLinkedIn}
-                  disabled={postState === 'posting'}
-                  style={{ ...styles.btn('#0A66C2'), opacity: postState === 'posting' ? 0.7 : 1 }}
-                >
-                  {postState === 'posting' ? 'Posting…' : '📤 Post to LinkedIn'}
+                <p style={{ color: '#9CA3AF', fontSize: 13, margin: 0 }}>
+                  <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#10B981', marginRight: 6 }} />
+                  Connected as <strong style={{ color: '#fff' }}>{auth.name}</strong>
+                </p>
+                <button onClick={doPost} style={{ ...styles.btn('#0A66C2'), fontSize: 15, padding: '14px 20px' }}>
+                  📤 Post to LinkedIn
                 </button>
-
                 {postState === 'error' && (
                   <p style={{ color: '#F87171', fontSize: 13, margin: 0 }}>{errorMsg}</p>
                 )}
@@ -626,50 +641,33 @@ export default function App() {
   const [attendee, setAttendee] = useState({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending' })
   const [shareCaption, setShareCaption] = useState('')
   const [imageDataUrl, setImageDataUrl] = useState(null)
+  const [autoPost, setAutoPost] = useState(false)
   const graphicRef = useRef()
 
-  // On mount: check if returning from LinkedIn OAuth (full-page redirect flow)
+  // On mount: returning from LinkedIn OAuth → restore state and auto-post
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    if (params.get('li_connected') === '1') {
-      // Clean up URL
-      window.history.replaceState({}, '', window.location.pathname)
-      // Restore saved state
-      try {
-        const saved = JSON.parse(sessionStorage.getItem(SS_KEY) || '{}')
-        sessionStorage.removeItem(SS_KEY)
-        if (saved.imageDataUrl && saved.caption) {
-          setAttendee(saved.attendee || { photoUrl: null, name: '', titleCompany: '', badge: 'Attending' })
-          setShareCaption(saved.caption)
-          setImageDataUrl(saved.imageDataUrl)
-          setShowOrganizer(false)
-          setStep(3)
-        }
-      } catch {}
-    }
+    if (params.get('li_connected') !== '1') return
+    window.history.replaceState({}, '', window.location.pathname)
+    try {
+      const raw = sessionStorage.getItem(SS_KEY)
+      sessionStorage.removeItem(SS_KEY)
+      if (!raw) return
+      const saved = JSON.parse(raw)
+      if (!saved.caption) return
+      if (saved.attendee) setAttendee(saved.attendee)
+      setShareCaption(saved.caption)
+      setImageDataUrl(saved.imageDataUrl || null)
+      setShowOrganizer(false)
+      setAutoPost(true)   // ← tells Step3 to post immediately
+      setStep(3)
+    } catch {}
   }, [])
 
-  function handleConfigChange(newCfg) {
-    setConfig(newCfg)
-    saveConfig(newCfg)
-  }
-
-  function handlePhoto(url) {
-    setAttendee((prev) => ({ ...prev, photoUrl: url }))
-    setStep(2)
-  }
-
-  function handleShare(caption, dataUrl) {
-    setShareCaption(caption)
-    setImageDataUrl(dataUrl)
-    setStep(3)
-  }
-
-  function handleReset() {
-    setAttendee({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending' })
-    setImageDataUrl(null)
-    setStep(1)
-  }
+  function handleConfigChange(newCfg) { setConfig(newCfg); saveConfig(newCfg) }
+  function handlePhoto(url) { setAttendee(p => ({ ...p, photoUrl: url })); setStep(2) }
+  function handleShare(caption, dataUrl) { setShareCaption(caption); setImageDataUrl(dataUrl); setStep(3) }
+  function handleReset() { setAttendee({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending' }); setImageDataUrl(null); setAutoPost(false); setStep(1) }
 
   return (
     <div style={{ minHeight: '100vh', background: config.bgColor, fontFamily: "'Inter', sans-serif" }}>
@@ -723,6 +721,7 @@ export default function App() {
                 caption={shareCaption}
                 imageDataUrl={imageDataUrl}
                 attendee={attendee}
+                autoPost={autoPost}
                 onReset={handleReset}
               />
             )}
