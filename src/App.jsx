@@ -20,6 +20,7 @@ const DEFAULT_CONFIG = {
     "Proud to be a partner at {eventName} in {location}. See you there! {mention} {hashtags}",
   primaryColor: '#0066FF',
   bgColor: '#0A0F1E',
+  fontFamily: 'Inter',
 }
 
 function loadConfig() {
@@ -126,6 +127,44 @@ function OrganizerPanel({ config, onChange, onDone }) {
         </div>
       ))}
 
+      {/* Font */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <label style={styles.label}>Graphic Font</label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {[
+            { name: 'Inter',            label: 'Inter'           },
+            { name: 'Poppins',          label: 'Poppins'         },
+            { name: 'Montserrat',       label: 'Montserrat'      },
+            { name: 'Space Grotesk',    label: 'Space Grotesk'   },
+            { name: 'Playfair Display', label: 'Playfair Display'},
+            { name: 'Oswald',           label: 'Oswald'          },
+            { name: 'DM Sans',          label: 'DM Sans'         },
+          ].map(({ name, label }) => {
+            const active = (config.fontFamily || 'Inter') === name
+            return (
+              <button
+                key={name}
+                onClick={() => onChange({ ...config, fontFamily: name })}
+                style={{
+                  fontFamily: `'${name}', sans-serif`,
+                  fontWeight: 700,
+                  fontSize: 13,
+                  padding: '6px 14px',
+                  borderRadius: 8,
+                  border: `1.5px solid ${active ? config.primaryColor : '#374151'}`,
+                  background: active ? `${config.primaryColor}22` : 'transparent',
+                  color: active ? config.primaryColor : '#9CA3AF',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
       {/* Colors */}
       <div style={styles.grid2}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -181,7 +220,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
       style={{
         position: 'relative', width: 600, height: 600,
         overflow: 'hidden', background: bg,
-        fontFamily: "'Inter', sans-serif", userSelect: 'none', flexShrink: 0,
+        fontFamily: `'${config.fontFamily || 'Inter'}', sans-serif`, userSelect: 'none', flexShrink: 0,
       }}
     >
       {/* Full-bleed photo background */}
@@ -745,23 +784,23 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', background: config.bgColor, fontFamily: "'Inter', sans-serif" }}>
 
-      {/* Header */}
-      <div style={{ borderBottom: '1px solid #1F2937', padding: '12px 16px' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {config.logoUrl && (
-              <img src={config.logoUrl} alt="logo" style={{ height: 28, width: 'auto', objectFit: 'contain' }} />
-            )}
-            <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>{config.eventName}</span>
-            {config.tagline && <span style={{ color: '#6B7280', fontSize: 12 }}>· {config.tagline}</span>}
-          </div>
-          {IS_ORGANIZER && (
+      {/* Header — organizer only */}
+      {IS_ORGANIZER && (
+        <div style={{ borderBottom: '1px solid #1F2937', padding: '12px 16px' }}>
+          <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {config.logoUrl && (
+                <img src={config.logoUrl} alt="logo" style={{ height: 28, width: 'auto', objectFit: 'contain' }} />
+              )}
+              <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>{config.eventName}</span>
+              {config.tagline && <span style={{ color: '#6B7280', fontSize: 12 }}>· {config.tagline}</span>}
+            </div>
             <span style={{ fontSize: 11, color: config.primaryColor, border: `1px solid ${config.primaryColor}`, borderRadius: 6, padding: '3px 10px', fontWeight: 700, letterSpacing: '0.06em' }}>
               ORGANIZER
             </span>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px' }}>
 
@@ -785,6 +824,27 @@ export default function App() {
         ) : (
           /* ── Attendee flow ── */
           <div>
+            {/* Event hero branding */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, paddingBottom: 28, paddingTop: 8 }}>
+              {config.logoUrl && (
+                <img src={config.logoUrl} alt="logo" style={{ height: 64, width: 'auto', objectFit: 'contain', maxWidth: 260 }} />
+              )}
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.1, fontFamily: `'${config.fontFamily || 'Inter'}', sans-serif` }}>
+                  {config.eventName}
+                </div>
+                {config.tagline && (
+                  <div style={{ fontSize: 14, color: config.primaryColor, fontWeight: 600, marginTop: 4, letterSpacing: '0.03em' }}>
+                    {config.tagline}
+                  </div>
+                )}
+                {(config.date || config.location) && (
+                  <div style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
+                    {[config.date, config.location].filter(Boolean).join(' · ')}
+                  </div>
+                )}
+              </div>
+            </div>
             <ProgressBar step={step} config={config} />
             {step === 1 && <Step1 config={config} onPhoto={handlePhoto} />}
             {step === 2 && (
