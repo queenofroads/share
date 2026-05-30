@@ -102,7 +102,7 @@
         <li>Captions or text you write</li>
         <li>IP addresses or device identifiers</li>
         <li>Usage analytics or behavioural data</li>
-        <li>Cookies (we set none)</li>
+        <li>Cookies (except a temporary session cookie if you connect LinkedIn — cleared after 1 hour)</li>
       </ul>
 
       <h2>3. What Stays on Your Device</h2>
@@ -117,7 +117,8 @@
       <p>All graphic creation happens entirely in your browser using the <code style="background:#1F2937;padding:1px 6px;border-radius:4px;font-size:13px;">dom-to-image-more</code> library. No image data is sent to any server. The generated PNG is saved directly to your device's Downloads folder or clipboard.</p>
 
       <h2>5. LinkedIn</h2>
-      <p>When you click "Open LinkedIn", you are redirected to LinkedIn's website. From that point, LinkedIn's own <a href="https://www.linkedin.com/legal/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a> applies. We do not have a LinkedIn integration, OAuth connection, or any access to your LinkedIn account. We cannot post on your behalf.</p>
+      <p>If you choose to post directly to LinkedIn, you will be redirected to LinkedIn's OAuth login. We request the <code style="background:#1F2937;padding:1px 6px;border-radius:4px;font-size:13px;">w_member_social</code> permission solely to publish the one post you created. Your LinkedIn access token is held only for the duration of your session (1 hour max) in a signed HttpOnly cookie and is never stored in a database. LinkedIn's own <a href="https://www.linkedin.com/legal/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a> applies to all interactions with LinkedIn's platform.</p>
+      <p>You may also choose "Download PNG" and share manually — in that case no LinkedIn connection is made at all.</p>
 
       <h2>6. Third-Party Services</h2>
       <p>We load the Inter font from Google Fonts (<a href="https://fonts.google.com" target="_blank" rel="noopener">fonts.google.com</a>). This means Google's servers receive your IP address when the font is fetched. See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a> for details. No other third-party services are used.</p>
