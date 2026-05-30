@@ -172,6 +172,8 @@ function EventGraphic({ config, attendee, graphicRef }) {
     : attendee.badge === 'Partner' ? '#10B981'
     : config.primaryColor
 
+  const bg = config.bgColor
+
   return (
     <div
       ref={graphicRef}
@@ -180,58 +182,93 @@ function EventGraphic({ config, attendee, graphicRef }) {
         width: 600,
         height: 600,
         overflow: 'hidden',
-        background: config.bgColor,
+        background: bg,
         fontFamily: "'Inter', sans-serif",
         userSelect: 'none',
         flexShrink: 0,
       }}
     >
+      {/* Subtle radial glow behind photo */}
+      <div style={{
+        position: 'absolute', top: 40, left: '50%', transform: 'translateX(-50%)',
+        width: 340, height: 340, borderRadius: '50%',
+        background: `radial-gradient(circle, ${config.primaryColor}28 0%, transparent 70%)`,
+        pointerEvents: 'none',
+      }} />
+
       {/* Top accent bar */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 5, background: config.primaryColor }} />
 
-      {/* Logo */}
-      {config.logoUrl && (
-        <div style={{ position: 'absolute', top: 22, left: 24, background: 'transparent' }}>
-          <img src={config.logoUrl} alt="logo" style={{ height: 34, width: 'auto', objectFit: 'contain' }} />
-        </div>
-      )}
-      {!config.logoUrl && (
-        <div style={{ position: 'absolute', top: 24, left: 24, fontSize: 12, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: config.primaryColor, background: 'transparent' }}>
+      {/* Logo top-left */}
+      {config.logoUrl ? (
+        <img src={config.logoUrl} alt="logo" style={{ position: 'absolute', top: 22, left: 28, height: 36, width: 'auto', objectFit: 'contain' }} />
+      ) : (
+        <div style={{ position: 'absolute', top: 22, left: 28, fontSize: 13, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: config.primaryColor }}>
           {config.eventName}
         </div>
       )}
 
-      {/* Photo circle */}
-      <div style={{ position: 'absolute', top: 68, left: '50%', transform: 'translateX(-50%)', width: 180, height: 180, background: 'transparent' }}>
-        <div style={{ width: 180, height: 180, borderRadius: '50%', overflow: 'hidden', border: `3px solid ${config.primaryColor}`, background: '#1a2035' }}>
-          {attendee.photoUrl ? (
-            <img src={attendee.photoUrl} alt="attendee" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          ) : (
-            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4a5568', fontSize: 48, background: '#1a2035' }}>?</div>
-          )}
-        </div>
-        {/* Badge */}
-        <div style={{ position: 'absolute', top: 10, right: -10, background: badgeColor, color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-          {attendee.badge}
-        </div>
-      </div>
-
-      {/* Event name */}
-      <div style={{ position: 'absolute', top: 300, left: 20, right: 20, textAlign: 'center', background: 'transparent' }}>
-        <div style={{ fontSize: 44, fontWeight: 900, color: '#fff', lineHeight: 1, letterSpacing: '-1.5px', background: 'transparent' }}>{config.eventName}</div>
-        {config.tagline && (
-          <div style={{ fontSize: 11, color: '#718096', marginTop: 5, fontWeight: 500, letterSpacing: '0.03em', background: 'transparent' }}>{config.tagline}</div>
+      {/* Photo circle — no wrapper div */}
+      <div style={{
+        position: 'absolute', top: 66, left: '50%', transform: 'translateX(-50%)',
+        width: 196, height: 196, borderRadius: '50%', overflow: 'hidden',
+        border: `4px solid ${config.primaryColor}`,
+        outline: 'none',
+        background: '#1a2035',
+      }}>
+        {attendee.photoUrl ? (
+          <img src={attendee.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 56, color: '#4a5568' }}>?</div>
         )}
       </div>
 
-      {/* Date + location */}
-      <div style={{ position: 'absolute', top: 378, left: 20, right: 20, textAlign: 'center', background: 'transparent' }}>
-        <div style={{ fontSize: 14, color: '#CBD5E0', fontWeight: 500, background: 'transparent' }}>{config.date} · {config.location}</div>
+      {/* Badge — sibling of photo, not child */}
+      <div style={{
+        position: 'absolute', top: 68, left: '50%', marginLeft: 62,
+        background: badgeColor, color: '#fff',
+        fontSize: 10, fontWeight: 800, padding: '4px 10px',
+        borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.08em',
+        whiteSpace: 'nowrap', outline: 'none',
+      }}>
+        {attendee.badge}
       </div>
 
-      {/* Bottom hashtag bar */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 58, background: config.primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.92)', textAlign: 'center', letterSpacing: '0.04em' }}>{config.hashtags}</div>
+      {/* Event name */}
+      <div style={{ position: 'absolute', top: 300, left: 30, right: 30, textAlign: 'center' }}>
+        <div style={{ fontSize: 56, fontWeight: 900, color: '#ffffff', lineHeight: 1, letterSpacing: '-2px' }}>
+          {config.eventName}
+        </div>
+      </div>
+
+      {/* Tagline */}
+      {config.tagline && (
+        <div style={{ position: 'absolute', top: 368, left: 30, right: 30, textAlign: 'center' }}>
+          <div style={{ fontSize: 13, color: config.primaryColor, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            {config.tagline}
+          </div>
+        </div>
+      )}
+
+      {/* Date + location */}
+      <div style={{ position: 'absolute', top: config.tagline ? 396 : 372, left: 30, right: 30, textAlign: 'center' }}>
+        <div style={{ fontSize: 14, color: '#9CA3AF', fontWeight: 500 }}>
+          {config.date}&nbsp;&nbsp;·&nbsp;&nbsp;{config.location}
+        </div>
+      </div>
+
+      {/* Thin divider */}
+      <div style={{ position: 'absolute', top: config.tagline ? 430 : 406, left: 80, right: 80, height: 1, background: 'rgba(255,255,255,0.08)' }} />
+
+      {/* Bottom bar */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: 62,
+        background: config.primaryColor,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 28px',
+      }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.95)', textAlign: 'center', letterSpacing: '0.04em' }}>
+          {config.hashtags}
+        </div>
       </div>
     </div>
   )
