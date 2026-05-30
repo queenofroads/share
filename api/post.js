@@ -32,7 +32,7 @@ export default async function handler(req, res) {
   const { access_token, sub } = payload
   const { imageDataUrl, caption } = req.body
   const personUrn = `urn:li:person:${sub}`
-  const LI_VERSION = '202304'
+  const LI_VERSION = '202501'
 
   // 1. Initialize image upload
   const initRes = await fetch('https://api.linkedin.com/rest/images?action=initializeUpload', {
