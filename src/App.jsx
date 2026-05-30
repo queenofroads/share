@@ -699,6 +699,13 @@ export default function App() {
         )}
 
       </div>
+
+      {/* Footer */}
+      <div style={{ borderTop: '1px solid #1F2937', marginTop: 40, padding: '16px 24px', textAlign: 'center' }}>
+        <a href="/privacy.html" target="_blank" rel="noopener" style={{ color: '#4B5563', fontSize: 12, textDecoration: 'none', fontFamily: "'Inter', sans-serif" }}>
+          Privacy Policy
+        </a>
+      </div>
     </div>
   )
 }
