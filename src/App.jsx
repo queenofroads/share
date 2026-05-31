@@ -166,32 +166,28 @@ function OrganizerPanel({ config, onChange, onDone }) {
       </div>
 
       {/* Colors */}
-      <div style={styles.grid2}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={styles.label}>Primary Color</label>
-          <div style={{ ...styles.input, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="color"
-              value={config.primaryColor}
-              style={{ width: 28, height: 28, border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
-              onChange={(e) => onChange({ ...config, primaryColor: e.target.value })}
-            />
-            <span style={{ fontSize: 13, fontFamily: 'monospace', color: '#D1D5DB' }}>{config.primaryColor}</span>
+      {(() => {
+        const PRIMARY_PRESETS = ['#0066FF','#6366F1','#8B5CF6','#EC4899','#EF4444','#F97316','#EAB308','#22C55E','#14B8A6','#06B6D4','#000000','#FFFFFF']
+        const BG_PRESETS = ['#0A0F1E','#0F172A','#1A1A2E','#111827','#18181B','#0D0D0D','#1E1B4B','#0C1A0C','#1A0A0A','#FFFFFF','#F3F4F6','#E5E7EB']
+        const Swatches = ({ label, colorKey, presets }) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label style={styles.label}>{label}</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+              {presets.map(c => (
+                <button key={c} onClick={() => onChange({ ...config, [colorKey]: c })} style={{ width: 32, height: 32, borderRadius: 8, background: c, border: config[colorKey] === c ? '3px solid #fff' : '2px solid #374151', cursor: 'pointer', flexShrink: 0, boxShadow: config[colorKey] === c ? '0 0 0 2px #6366F1' : 'none', transition: 'all 0.1s' }} />
+              ))}
+              <label style={{ width: 32, height: 32, borderRadius: 8, background: 'transparent', border: '2px dashed #374151', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#6B7280', flexShrink: 0 }}>
+                +<input type="color" value={config[colorKey]} style={{ display: 'none' }} onChange={(e) => onChange({ ...config, [colorKey]: e.target.value })} />
+              </label>
+              <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#6B7280' }}>{config[colorKey]}</span>
+            </div>
           </div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={styles.label}>Background Color</label>
-          <div style={{ ...styles.input, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="color"
-              value={config.bgColor}
-              style={{ width: 28, height: 28, border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
-              onChange={(e) => onChange({ ...config, bgColor: e.target.value })}
-            />
-            <span style={{ fontSize: 13, fontFamily: 'monospace', color: '#D1D5DB' }}>{config.bgColor}</span>
-          </div>
-        </div>
-      </div>
+        )
+        return <>
+          <Swatches label="Primary Color" colorKey="primaryColor" presets={PRIMARY_PRESETS} />
+          <Swatches label="Background Color" colorKey="bgColor" presets={BG_PRESETS} />
+        </>
+      })()}
 
       <button
         onClick={onDone}
