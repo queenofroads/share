@@ -1,4 +1,4 @@
-import * as kv from './kv.js'
+import * as kv from '../kv.js'
 
 export default async function handler(req, res) {
   const { slug, key } = req.query
