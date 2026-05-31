@@ -288,10 +288,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: primary }} />
         <div style={{ marginTop: 32, zIndex: 2 }}><LogoOrName color={primary} height={42} /></div>
         <div style={{ marginTop: 28, width: 260, height: 260, borderRadius: '50%', overflow: 'hidden', border: `6px solid ${primary}`, flexShrink: 0, zIndex: 2, boxShadow: `0 0 0 4px ${bg}, 0 0 0 10px ${primary}55` }}>
-          {attendee.photoUrl
-            ? <div style={{ width: '100%', height: '100%', backgroundImage: `url(${attendee.photoUrl})`, backgroundSize: 'cover', backgroundPosition: objPos }} />
-            : <div style={{ width: '100%', height: '100%', background: '#1F2937', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 80, color: '#374151' }}>?</span></div>
-          }
+          <PhotoImg />
         </div>
         <div style={{ marginTop: 24, textAlign: 'center', padding: '0 40px', zIndex: 2 }}>
           <div style={{ fontSize: 36, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{config.eventName}</div>
