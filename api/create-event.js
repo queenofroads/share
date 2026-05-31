@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv'
+import * as kv from './kv.js'
 
 const DEFAULT_CONFIG = {
   eventName: '',

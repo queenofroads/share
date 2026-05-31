@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { kv } from '@vercel/kv'
+import * as kv from '../kv.js'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
