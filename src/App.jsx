@@ -1194,7 +1194,7 @@ function EventApp() {
                     Preview attendee view ↗
                   </a>
                 </div>
-                <OrganizerPanel config={config} onChange={handleConfigChange} onDone={() => {}} />
+                <OrganizerPanel config={config} onChange={handleConfigChange} onDone={() => { window.location.href = `/e/${EVENT_SLUG}` }} />
               </>
             )}
           </div>
