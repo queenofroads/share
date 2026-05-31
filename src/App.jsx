@@ -458,7 +458,7 @@ function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '0 16px', maxWidth: 900, margin: '0 auto', width: '100%', position: 'relative' }}>
 
       {/* Hidden full-size graphic for capture */}
-      <div style={{ position: 'fixed', left: -700, top: 0, width: 600, height: 600, overflow: 'hidden', pointerEvents: 'none', visibility: 'hidden' }}>
+      <div style={{ position: 'fixed', left: -700, top: 0, width: 600, height: 600, overflow: 'hidden', pointerEvents: 'none' }}>
         <EventGraphic config={config} attendee={attendee} graphicRef={graphicRef} />
       </div>
 
