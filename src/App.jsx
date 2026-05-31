@@ -1190,7 +1190,7 @@ function EventApp() {
               <>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                   <h2 style={{ color: '#fff', fontWeight: 700, fontSize: 18, margin: 0 }}>Configure Your Event</h2>
-                  <a href={`/e/${EVENT_SLUG}`} target="_blank" rel="noopener" style={{ fontSize: 13, color: config.primaryColor, fontWeight: 600, textDecoration: 'none', border: `1px solid ${config.primaryColor}`, borderRadius: 8, padding: '6px 14px' }}>
+                  <a href={`/e/${EVENT_SLUG}`} style={{ fontSize: 13, color: config.primaryColor, fontWeight: 600, textDecoration: 'none', border: `1px solid ${config.primaryColor}`, borderRadius: 8, padding: '6px 14px' }}>
                     Preview attendee view ↗
                   </a>
                 </div>
