@@ -231,9 +231,12 @@ function EventGraphic({ config, attendee, graphicRef }) {
       : <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color }}>{config.eventName}</div>
   )
 
+  const FILTERS = { none: 'none', bw: 'grayscale(100%)', warm: 'sepia(50%) saturate(1.3) brightness(1.05)', fade: 'brightness(1.15) contrast(0.8) saturate(0.7)', vivid: 'saturate(1.8) contrast(1.1)' }
+  const filterCss = FILTERS[attendee.photoFilter || 'none']
+
   const PhotoImg = ({ style: imgStyle }) => (
     attendee.photoUrl
-      ? <div style={{ width: '100%', height: '100%', backgroundImage: `url(${attendee.photoUrl})`, backgroundSize: 'cover', backgroundPosition: objPos, ...imgStyle }} />
+      ? <div style={{ width: '100%', height: '100%', backgroundImage: `url(${attendee.photoUrl})`, backgroundSize: 'cover', backgroundPosition: objPos, filter: filterCss, ...imgStyle }} />
       : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }} />
   )
 
@@ -521,6 +524,14 @@ function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
 
         {/* Fields */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1, minWidth: 260 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={styles.label}>Filter</label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {[['none','Normal'],['bw','B&W'],['warm','Warm'],['fade','Fade'],['vivid','Vivid']].map(([key, label]) => (
+                <button key={key} onClick={() => setAttendee(p => ({ ...p, photoFilter: key }))} style={{ padding: '6px 14px', borderRadius: 99, fontSize: 13, fontWeight: 600, border: `1.5px solid ${attendee.photoFilter === key ? config.primaryColor : '#374151'}`, background: attendee.photoFilter === key ? config.primaryColor : 'transparent', color: attendee.photoFilter === key ? '#fff' : '#9CA3AF', cursor: 'pointer' }}>{label}</button>
+              ))}
+            </div>
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <label style={styles.label}>Badge</label>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -1105,7 +1116,7 @@ function EventApp() {
     return DEFAULT_CONFIG
   })
   const [step, setStep] = useState(1)
-  const [attendee, setAttendee] = useState({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending', style: 'frame', photoOffset: { x: 50, y: 50 } })
+  const [attendee, setAttendee] = useState({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending', style: 'frame', photoOffset: { x: 50, y: 50 }, photoFilter: 'none' })
   const [shareCaption, setShareCaption] = useState('')
   const [imageDataUrl, setImageDataUrl] = useState(null)
   const [autoPost, setAutoPost] = useState(false)
@@ -1157,7 +1168,7 @@ function EventApp() {
   function handleStyle(key, advance) { setAttendee(p => ({ ...p, style: key })); if (advance) setStep(2) }
   function handlePhoto(url) { setAttendee(p => ({ ...p, photoUrl: url })); setStep(3) }
   function handleShare(caption, dataUrl) { setShareCaption(caption); setImageDataUrl(dataUrl); setStep(4) }
-  function handleReset() { setAttendee({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending', style: 'frame', photoOffset: { x: 50, y: 50 } }); setImageDataUrl(null); setAutoPost(false); setStep(1) }
+  function handleReset() { setAttendee({ photoUrl: null, name: '', titleCompany: '', badge: 'Attending', style: 'frame', photoOffset: { x: 50, y: 50 }, photoFilter: 'none' }); setImageDataUrl(null); setAutoPost(false); setStep(1) }
 
   return (
     <div style={{ minHeight: '100vh', background: config.bgColor, fontFamily: "'Inter', sans-serif" }}>
