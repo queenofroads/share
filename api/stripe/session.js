@@ -1,6 +1,8 @@
 import Stripe from 'stripe'
+import { Redis } from '@upstash/redis'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+const kv = new Redis({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN })
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end()
@@ -17,8 +19,6 @@ export default async function handler(req, res) {
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : 'https://shareevent.vercel.app'
 
-    // Fetch the setupKey from KV
-    const { kv } = await import('@vercel/kv')
     const record = await kv.get(`event:${slug}`)
     if (!record) return res.status(404).json({ error: 'Event record not found yet — please wait a moment and refresh' })
 
