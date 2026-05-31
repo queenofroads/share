@@ -321,33 +321,33 @@ function EventGraphic({ config, attendee, graphicRef }) {
 // ─── Step 0: Choose Style ─────────────────────────────────────────
 
 function Step0({ config, selectedStyle, onStyle }) {
-  const THUMB = 140
+  const THUMB = 120
   const demo = { photoUrl: null, name: '', badge: 'Attending', photoOffset: { x: 50, y: 50 } }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, padding: '0 16px', paddingTop: 8 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '0 16px' }}>
       <div style={{ textAlign: 'center' }}>
-        <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', margin: 0 }}>Choose Your Style</h2>
-        <p style={{ color: '#9CA3AF', fontSize: 14, margin: '6px 0 0' }}>Pick a layout — then add your photo</p>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: '#fff', margin: 0 }}>Choose Your Style</h2>
+        <p style={{ color: '#9CA3AF', fontSize: 14, margin: 0 }}>Tap a layout to continue</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14, width: '100%', maxWidth: 480 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, width: '100%', maxWidth: 480 }}>
         {STYLES.map(({ key, name, desc }) => {
           const active = selectedStyle === key
           return (
             <button
               key={key}
-              onClick={() => onStyle(key)}
+              onClick={() => onStyle(key, true)}
               style={{
                 background: 'transparent',
                 border: `2px solid ${active ? config.primaryColor : '#374151'}`,
                 borderRadius: 14,
-                padding: 12,
+                padding: 10,
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 10,
+                gap: 8,
                 transition: 'all 0.15s',
                 outline: 'none',
                 boxShadow: active ? `0 0 0 2px ${config.primaryColor}40` : 'none',
@@ -366,13 +366,6 @@ function Step0({ config, selectedStyle, onStyle }) {
           )
         })}
       </div>
-
-      <button
-        onClick={() => onStyle(selectedStyle, true)}
-        style={{ ...styles.btn(config.primaryColor), maxWidth: 300 }}
-      >
-        Use {STYLES.find(s => s.key === selectedStyle)?.name} Style →
-      </button>
     </div>
   )
 }
