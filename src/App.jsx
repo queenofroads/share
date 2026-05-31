@@ -5,15 +5,15 @@ import './index.css'
 const STORAGE_KEY = 'event-share-config'
 
 const DEFAULT_CONFIG = {
-  eventName: 'ARCTIC15',
-  tagline: '15th Anniversary Edition',
-  date: 'June 11–12, 2026',
-  location: 'Helsinki, Finland',
-  hashtags: '#ARCTIC15 #Helsinki #Startup',
-  mention: '@ARCTIC15',
+  eventName: 'Your Event',
+  tagline: '',
+  date: '',
+  location: '',
+  hashtags: '',
+  mention: '',
   logoUrl: null,
   captionAttending:
-    "Excited to be joining {eventName} in {location}. If you're building something ambitious, this is where I'll be. {mention} {hashtags}",
+    "Excited to be joining {eventName} in {location}. {mention} {hashtags}",
   captionSpeaking:
     "Excited to be speaking at {eventName} in {location}. Come find me there — let's talk. {mention} {hashtags}",
   captionPartner:
