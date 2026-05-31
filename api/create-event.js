@@ -1,5 +1,5 @@
 import { Redis } from '@upstash/redis'
-const kv = new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN })
+const kv = new Redis({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN })
 
 const DEFAULT_CONFIG = {
   eventName: '',
@@ -21,8 +21,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
   try {
-    if (!process.env.UPSTASH_REDIS_REST_URL) {
-      return res.status(500).json({ error: 'Upstash Redis is not connected. Add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN to Vercel environment variables.' })
+    if (!process.env.KV_REST_API_URL) {
+      return res.status(500).json({ error: 'Upstash Redis is not connected. Add KV_REST_API_URL and KV_REST_API_TOKEN to Vercel environment variables.' })
     }
 
     const { slug, eventName, email } = req.body || {}

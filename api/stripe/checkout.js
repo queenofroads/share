@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 import { Redis } from '@upstash/redis'
-const kv = new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN })
+const kv = new Redis({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN })
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   try {
     if (!process.env.STRIPE_SECRET_KEY) return res.status(500).json({ error: 'STRIPE_SECRET_KEY is not set in Vercel environment variables.' })
     if (!process.env.STRIPE_PRICE_ID) return res.status(500).json({ error: 'STRIPE_PRICE_ID is not set in Vercel environment variables.' })
-    if (!process.env.UPSTASH_REDIS_REST_URL) return res.status(500).json({ error: 'Upstash Redis is not connected. Add UPSTASH_REDIS_REST_URL to Vercel environment variables.' })
+    if (!process.env.KV_REST_API_URL) return res.status(500).json({ error: 'Upstash Redis is not connected. Add KV_REST_API_URL to Vercel environment variables.' })
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
     const { slug, eventName, email } = req.body || {}
