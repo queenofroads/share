@@ -1058,13 +1058,30 @@ const _eventMatch = _path.match(/^\/e\/([^/]+)(\/setup)?/)
 const EVENT_SLUG = _eventMatch?.[1] || null
 const IS_ORGANIZER = !!_eventMatch?.[2]
 const _page = !_eventMatch
-  ? (_path === '/buy' ? 'buy' : _path === '/success' ? 'success' : 'landing')
+  ? (_path === '/buy' ? 'buy' : _path === '/success' ? 'success' : _path === '/setup' ? 'old-setup' : 'landing')
   : 'event'
 
 export default function App() {
   if (_page === 'landing') return <LandingPage />
   if (_page === 'buy') return <BuyPage />
   if (_page === 'success') return <SuccessPage />
+  if (_page === 'old-setup') return (
+    <div style={{ minHeight: '100vh', background: '#0A0F1E', fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ maxWidth: 480, textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 20 }}>🔗</div>
+        <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 24, margin: '0 0 12px' }}>Setup URL has changed</h2>
+        <p style={{ color: '#9CA3AF', fontSize: 15, lineHeight: 1.6, margin: '0 0 28px' }}>
+          Each event now has its own organizer link. Check your email for the link you received after payment — it looks like:
+        </p>
+        <div style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 12, padding: '14px 18px', fontFamily: 'monospace', fontSize: 13, color: '#60A5FA', marginBottom: 28, textAlign: 'left', wordBreak: 'break-all' }}>
+          shareevent.vercel.app/e/your-slug/setup?key=SECRET
+        </div>
+        <a href="/buy" style={{ display: 'inline-block', background: '#0066FF', color: '#fff', padding: '12px 28px', borderRadius: 12, fontWeight: 700, fontSize: 15, textDecoration: 'none' }}>
+          Create a new event page →
+        </a>
+      </div>
+    </div>
+  )
   return <EventApp />
 }
 
