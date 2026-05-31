@@ -82,7 +82,7 @@ function OrganizerPanel({ config, onChange, onDone }) {
   return (
     <div style={{ ...styles.panel, display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={styles.grid2}>
-        {f('Event Name', 'eventName', 'ARCTIC15')}
+        {f('Event Name', 'eventName', 'Your Event Name')}
         {f('Edition / Tagline', 'tagline', '15th Anniversary Edition')}
         {f('Date', 'date', 'June 11–12, 2026')}
         {f('Location', 'location', 'Helsinki, Finland')}
@@ -972,13 +972,13 @@ function BuyPage() {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
             <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Event Name</label>
-            <input style={inp} placeholder="ARCTIC15" value={form.eventName} onChange={e => setForm(f => ({ ...f, eventName: e.target.value }))} required />
+            <input style={inp} placeholder="Summer Summit 2026" value={form.eventName} onChange={e => setForm(f => ({ ...f, eventName: e.target.value }))} required />
           </div>
           <div>
             <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
               URL Slug <span style={{ color: '#4B5563', fontWeight: 400, textTransform: 'none' }}>— shareevent.vercel.app/e/<strong style={{ color: '#6B7280' }}>this-part</strong></span>
             </label>
-            <input style={{ ...inp, fontFamily: 'monospace' }} placeholder="arctic15" value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} required />
+            <input style={{ ...inp, fontFamily: 'monospace' }} placeholder="summer-summit-2026" value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} required />
             {form.slug && <div style={{ fontSize: 12, color: '#4B5563', marginTop: 4 }}>shareevent.vercel.app/e/{slugify(form.slug)}</div>}
           </div>
           <div>
