@@ -253,8 +253,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
       </div>
       <div style={{ position: 'absolute', top: 20, right: 50, zIndex: 6 }}><LogoOrName /></div>
       <div style={{ position: 'absolute', bottom: 30, left: 50, right: 50, zIndex: 6 }}>
-        <div style={{ display: 'inline-block', background: primary, color: '#fff', fontSize: 16, fontWeight: 800, padding: '6px 16px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>{attendee.badge}</div>
-        <div style={{ fontSize: 42, fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-1px' }}>{badgeLabel}<br />{config.eventName}</div>
+        <div style={{ fontSize: 42, fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-1px' }}>{config.eventName}</div>
         <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginTop: 8, fontWeight: 500 }}>{config.location}</div>
       </div>
     </div>
@@ -271,8 +270,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
         <div style={{ flex: 1, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px 28px', overflow: 'hidden' }}>
           <div><LogoOrName color="#fff" height={42} /></div>
           <div>
-            <div style={{ display: 'inline-block', background: 'rgba(0,0,0,0.25)', color: '#fff', fontSize: 16, fontWeight: 800, padding: '6px 16px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>{attendee.badge}</div>
-            <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{badgeLabel}<br />{config.eventName}</div>
+            <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{config.eventName}</div>
           </div>
           <div>
             <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>{config.location}</div>
@@ -296,8 +294,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
           }
         </div>
         <div style={{ marginTop: 24, textAlign: 'center', padding: '0 40px', zIndex: 2 }}>
-          <div style={{ display: 'inline-block', background: primary, color: '#fff', fontSize: 16, fontWeight: 800, padding: '6px 16px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>{attendee.badge}</div>
-          <div style={{ fontSize: 36, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{badgeLabel}<br />{config.eventName}</div>
+          <div style={{ fontSize: 36, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{config.eventName}</div>
           <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 10, fontWeight: 500 }}>{config.location} · {config.date}</div>
         </div>
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: primary }} />
@@ -314,8 +311,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 80, background: `linear-gradient(to top, ${primary}, transparent)` }} />
       </div>
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 240, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 40px' }}>
-        <div style={{ display: 'inline-block', background: 'rgba(0,0,0,0.25)', color: '#fff', fontSize: 16, fontWeight: 800, padding: '6px 16px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12, alignSelf: 'flex-start' }}>{attendee.badge}</div>
-        <div style={{ fontSize: 40, fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-1px' }}>{badgeLabel}<br />{config.eventName}</div>
+        <div style={{ fontSize: 40, fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-1px' }}>{config.eventName}</div>
         <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginTop: 10, fontWeight: 500 }}>{config.location} · {config.date}</div>
       </div>
     </div>
