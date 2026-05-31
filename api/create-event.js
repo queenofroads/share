@@ -1,6 +1,4 @@
-import { Redis } from '@upstash/redis'
-
-const kv = new Redis({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN })
+import { kv } from '@vercel/kv'
 
 const DEFAULT_CONFIG = {
   eventName: '',
@@ -23,7 +21,7 @@ export default async function handler(req, res) {
 
   try {
     if (!process.env.KV_REST_API_URL) {
-      return res.status(500).json({ error: 'Upstash Redis is not connected. Add KV_REST_API_URL and KV_REST_API_TOKEN to Vercel environment variables.' })
+      return res.status(500).json({ error: 'Storage not connected. KV_REST_API_URL is missing from environment variables.' })
     }
 
     const { slug, eventName, email } = req.body || {}

@@ -1,6 +1,5 @@
 import Stripe from 'stripe'
-import { Redis } from '@upstash/redis'
-const kv = new Redis({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN })
+import { kv } from '@vercel/kv'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
