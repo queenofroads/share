@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   try {
     if (!process.env.STRIPE_SECRET_KEY) return res.status(500).json({ error: 'STRIPE_SECRET_KEY is not set in Vercel environment variables.' })
     if (!process.env.STRIPE_PRICE_ID) return res.status(500).json({ error: 'STRIPE_PRICE_ID is not set in Vercel environment variables.' })
-    if (!process.env.KV_REST_API_URL) return res.status(500).json({ error: 'Vercel KV is not connected. Enable it in the Vercel Storage tab.' })
+    if (!process.env.UPSTASH_REDIS_REST_URL) return res.status(500).json({ error: 'Upstash Redis is not connected. Add UPSTASH_REDIS_REST_URL to Vercel environment variables.' })
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
     const { slug, eventName, email } = req.body || {}

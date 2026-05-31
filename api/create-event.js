@@ -21,8 +21,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
   try {
-    if (!process.env.KV_REST_API_URL) {
-      return res.status(500).json({ error: 'Vercel KV is not connected. Enable it in the Vercel Storage tab.' })
+    if (!process.env.UPSTASH_REDIS_REST_URL) {
+      return res.status(500).json({ error: 'Upstash Redis is not connected. Add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN to Vercel environment variables.' })
     }
 
     const { slug, eventName, email } = req.body || {}
