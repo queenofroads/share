@@ -1,5 +1,7 @@
 import * as kv from './kv.js'
 
+export const version = 'v4-upstash-direct'
+
 const DEFAULT_CONFIG = {
   eventName: '',
   tagline: '',
