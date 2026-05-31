@@ -933,14 +933,15 @@ function BuyPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/stripe/checkout', {
+      const res = await fetch('/api/create-event', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, slug: slugify(form.slug) }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      window.location.href = data.url
+      // Store result and show success inline
+      window.location.href = `/success?attendeeUrl=${encodeURIComponent(data.attendeeUrl)}&setupUrl=${encodeURIComponent(data.setupUrl)}&eventName=${encodeURIComponent(data.eventName)}`
     } catch (err) {
       setError(err.message)
       setLoading(false)
@@ -956,7 +957,7 @@ function BuyPage() {
       </div>
       <div style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 20, padding: '32px 28px', width: '100%', maxWidth: 480 }}>
         <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 22, margin: '0 0 6px' }}>Create your event page</h2>
-        <p style={{ color: '#6B7280', fontSize: 14, margin: '0 0 28px' }}>You'll be taken to Stripe to complete payment. Your event page is ready instantly after.</p>
+        <p style={{ color: '#6B7280', fontSize: 14, margin: '0 0 28px' }}>Fill in the details below. Your attendee and organizer links will be ready instantly.</p>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
             <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Event Name</label>
@@ -975,7 +976,7 @@ function BuyPage() {
           </div>
           {error && <p style={{ color: '#F87171', fontSize: 13, margin: 0 }}>{error}</p>}
           <button type="submit" disabled={loading} style={{ background: '#0066FF', border: 'none', borderRadius: 12, padding: '14px', color: '#fff', fontWeight: 700, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: 4 }}>
-            {loading ? 'Redirecting to payment…' : 'Pay & create page →'}
+            {loading ? 'Creating…' : 'Create event page →'}
           </button>
           <p style={{ color: '#4B5563', fontSize: 12, textAlign: 'center', margin: 0 }}>Secure payment via Stripe · One-time · No subscription</p>
         </form>
@@ -992,7 +993,17 @@ function SuccessPage() {
   const [copied, setCopied] = useState(null)
 
   useEffect(() => {
-    const sessionId = new URLSearchParams(window.location.search).get('session_id')
+    const params = new URLSearchParams(window.location.search)
+    // Direct flow (no payment): URLs passed as query params
+    const attendeeUrl = params.get('attendeeUrl')
+    const setupUrl = params.get('setupUrl')
+    const eventName = params.get('eventName')
+    if (attendeeUrl && setupUrl) {
+      setData({ attendeeUrl, setupUrl, eventName: eventName || '' })
+      return
+    }
+    // Stripe flow: look up session
+    const sessionId = params.get('session_id')
     if (!sessionId) { setError('No session found.'); return }
     let attempts = 0
     const tryFetch = async () => {
