@@ -233,7 +233,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
 
   const PhotoImg = ({ style: imgStyle }) => (
     attendee.photoUrl
-      ? <img src={attendee.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: objPos, display: 'block', ...imgStyle }} />
+      ? <div style={{ width: '100%', height: '100%', backgroundImage: `url(${attendee.photoUrl})`, backgroundSize: 'cover', backgroundPosition: objPos, ...imgStyle }} />
       : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }} />
   )
 
@@ -292,7 +292,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
         <div style={{ marginTop: 32, zIndex: 2 }}><LogoOrName color={primary} height={42} /></div>
         <div style={{ marginTop: 28, width: 260, height: 260, borderRadius: '50%', overflow: 'hidden', border: `6px solid ${primary}`, flexShrink: 0, zIndex: 2, boxShadow: `0 0 0 4px ${bg}, 0 0 0 10px ${primary}55` }}>
           {attendee.photoUrl
-            ? <img src={attendee.photoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: objPos, display: 'block' }} />
+            ? <div style={{ width: '100%', height: '100%', backgroundImage: `url(${attendee.photoUrl})`, backgroundSize: 'cover', backgroundPosition: objPos }} />
             : <div style={{ width: '100%', height: '100%', background: '#1F2937', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 80, color: '#374151' }}>?</span></div>
           }
         </div>
