@@ -52,6 +52,28 @@ function buildCaption(template, config, name) {
     .replace(/{tagline}/g, config.tagline || '')
 }
 
+// ─── Color Swatches (module-level to avoid React remount on every render) ────
+
+const PRIMARY_PRESETS = ['#0066FF','#6366F1','#8B5CF6','#EC4899','#EF4444','#F97316','#EAB308','#22C55E','#14B8A6','#06B6D4','#000000','#FFFFFF']
+const BG_PRESETS = ['#0A0F1E','#0F172A','#1A1A2E','#111827','#18181B','#0D0D0D','#1E1B4B','#0C1A0C','#1A0A0A','#FFFFFF','#F3F4F6','#E5E7EB']
+
+function ColorSwatches({ label, currentColor, presets, onChange }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <label style={styles.label}>{label}</label>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+        {presets.map(c => (
+          <button key={c} onClick={() => onChange(c)} style={{ width: 32, height: 32, borderRadius: 8, background: c, border: currentColor === c ? '3px solid #fff' : '2px solid #374151', cursor: 'pointer', flexShrink: 0, boxShadow: currentColor === c ? '0 0 0 2px #6366F1' : 'none', transition: 'all 0.1s' }} />
+        ))}
+        <label style={{ width: 32, height: 32, borderRadius: 8, background: 'transparent', border: '2px dashed #374151', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#6B7280', flexShrink: 0 }}>
+          +<input type="color" value={currentColor} style={{ display: 'none' }} onChange={(e) => onChange(e.target.value)} />
+        </label>
+        <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#6B7280' }}>{currentColor}</span>
+      </div>
+    </div>
+  )
+}
+
 // ─── Organizer Panel ──────────────────────────────────────────────
 
 function OrganizerPanel({ config, onChange, onDone }) {
@@ -166,28 +188,8 @@ function OrganizerPanel({ config, onChange, onDone }) {
       </div>
 
       {/* Colors */}
-      {(() => {
-        const PRIMARY_PRESETS = ['#0066FF','#6366F1','#8B5CF6','#EC4899','#EF4444','#F97316','#EAB308','#22C55E','#14B8A6','#06B6D4','#000000','#FFFFFF']
-        const BG_PRESETS = ['#0A0F1E','#0F172A','#1A1A2E','#111827','#18181B','#0D0D0D','#1E1B4B','#0C1A0C','#1A0A0A','#FFFFFF','#F3F4F6','#E5E7EB']
-        const Swatches = ({ label, colorKey, presets }) => (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <label style={styles.label}>{label}</label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-              {presets.map(c => (
-                <button key={c} onClick={() => onChange({ ...config, [colorKey]: c })} style={{ width: 32, height: 32, borderRadius: 8, background: c, border: config[colorKey] === c ? '3px solid #fff' : '2px solid #374151', cursor: 'pointer', flexShrink: 0, boxShadow: config[colorKey] === c ? '0 0 0 2px #6366F1' : 'none', transition: 'all 0.1s' }} />
-              ))}
-              <label style={{ width: 32, height: 32, borderRadius: 8, background: 'transparent', border: '2px dashed #374151', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#6B7280', flexShrink: 0 }}>
-                +<input type="color" value={config[colorKey]} style={{ display: 'none' }} onChange={(e) => onChange({ ...config, [colorKey]: e.target.value })} />
-              </label>
-              <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#6B7280' }}>{config[colorKey]}</span>
-            </div>
-          </div>
-        )
-        return <>
-          <Swatches label="Primary Color" colorKey="primaryColor" presets={PRIMARY_PRESETS} />
-          <Swatches label="Background Color" colorKey="bgColor" presets={BG_PRESETS} />
-        </>
-      })()}
+      <ColorSwatches label="Primary Color" currentColor={config.primaryColor} presets={PRIMARY_PRESETS} onChange={c => onChange({ ...config, primaryColor: c })} />
+      <ColorSwatches label="Background Color" currentColor={config.bgColor} presets={BG_PRESETS} onChange={c => onChange({ ...config, bgColor: c })} />
 
       <button
         onClick={onDone}
@@ -197,6 +199,16 @@ function OrganizerPanel({ config, onChange, onDone }) {
       </button>
     </div>
   )
+}
+
+// ─── Photo Image (module-level to avoid React remount on every render) ────────
+
+const PHOTO_FILTERS = { none: 'none', bw: 'grayscale(100%)', warm: 'sepia(50%) saturate(1.3) brightness(1.05)', fade: 'brightness(1.15) contrast(0.8) saturate(0.7)', vivid: 'saturate(1.8) contrast(1.1)' }
+
+function PhotoImg({ photoUrl, objPos, filterCss, style: imgStyle }) {
+  return photoUrl
+    ? <div style={{ width: '100%', height: '100%', backgroundImage: `url(${photoUrl})`, backgroundSize: 'cover', backgroundPosition: objPos, filter: filterCss, ...imgStyle }} />
+    : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }} />
 }
 
 // ─── Event Graphic ────────────────────────────────────────────────
@@ -217,9 +229,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
   const py = attendee.photoOffset?.y ?? 50
   const objPos = `${px}% ${py}%`
 
-  const badgeLabel = attendee.badge === 'Speaking' ? 'Speaking at'
-    : attendee.badge === 'Partner' ? 'Partner at'
-    : 'Attending'
+  const filterCss = PHOTO_FILTERS[attendee.photoFilter || 'none']
 
   const LogoOrName = ({ color = primary, height = 47 }) => (
     config.logoUrl
@@ -227,21 +237,14 @@ function EventGraphic({ config, attendee, graphicRef }) {
       : <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color }}>{config.eventName}</div>
   )
 
-  const FILTERS = { none: 'none', bw: 'grayscale(100%)', warm: 'sepia(50%) saturate(1.3) brightness(1.05)', fade: 'brightness(1.15) contrast(0.8) saturate(0.7)', vivid: 'saturate(1.8) contrast(1.1)' }
-  const filterCss = FILTERS[attendee.photoFilter || 'none']
-
-  const PhotoImg = ({ style: imgStyle }) => (
-    attendee.photoUrl
-      ? <div style={{ width: '100%', height: '100%', backgroundImage: `url(${attendee.photoUrl})`, backgroundSize: 'cover', backgroundPosition: objPos, filter: filterCss, ...imgStyle }} />
-      : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }} />
-  )
+  const photo = <PhotoImg photoUrl={attendee.photoUrl} objPos={objPos} filterCss={filterCss} />
 
   const root = { position: 'relative', width: 600, height: 600, overflow: 'hidden', background: bg, fontFamily: font, userSelect: 'none', flexShrink: 0 }
 
   // ── FRAME ──────────────────────────────────────────────────────────
   if (style === 'frame') return (
     <div ref={graphicRef} style={root}>
-      <div style={{ position: 'absolute', inset: 0 }}><PhotoImg /></div>
+      <div style={{ position: 'absolute', inset: 0 }}>{photo}</div>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 140, background: 'linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, transparent 100%)' }} />
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 200, background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%)' }} />
       <div style={{ position: 'absolute', inset: 0, border: `10px solid ${primary}`, pointerEvents: 'none', zIndex: 4 }} />
@@ -264,7 +267,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
     <div ref={graphicRef} style={root}>
       <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
         <div style={{ position: 'relative', width: '55%', height: '100%', overflow: 'hidden', flexShrink: 0 }}>
-          <PhotoImg />
+          {photo}
           <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.35))' }} />
         </div>
         <div style={{ flex: 1, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px 28px', overflow: 'hidden' }}>
@@ -288,7 +291,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: primary }} />
         <div style={{ marginTop: 32, zIndex: 2 }}><LogoOrName color={primary} height={42} /></div>
         <div style={{ marginTop: 28, width: 260, height: 260, borderRadius: '50%', overflow: 'hidden', border: `6px solid ${primary}`, flexShrink: 0, zIndex: 2, boxShadow: `0 0 0 4px ${bg}, 0 0 0 10px ${primary}55` }}>
-          <PhotoImg />
+          {photo}
         </div>
         <div style={{ marginTop: 24, textAlign: 'center', padding: '0 40px', zIndex: 2 }}>
           <div style={{ fontSize: 36, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{config.eventName}</div>
@@ -303,7 +306,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
   return (
     <div ref={graphicRef} style={root}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 360, overflow: 'hidden' }}>
-        <PhotoImg />
+        {photo}
         <div style={{ position: 'absolute', top: 16, right: 24, zIndex: 2 }}><LogoOrName height={42} /></div>
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 80, background: `linear-gradient(to top, ${primary}, transparent)` }} />
       </div>
@@ -1104,12 +1107,15 @@ function EventApp() {
   const [autoPost, setAutoPost] = useState(false)
   const graphicRef = useRef()
 
-  // Fetch config from API on mount
+  // Fetch config from API on mount — skip overwrite if organizer just saved locally
   useEffect(() => {
     fetch(`/api/config/${EVENT_SLUG}`)
       .then(r => r.json())
       .then(d => {
-        if (d.config) {
+        if (!d.config) return
+        const savedAt = parseInt(sessionStorage.getItem(`cfg-saved:${EVENT_SLUG}`) || '0')
+        const recentlySaved = Date.now() - savedAt < 15000
+        if (!recentlySaved) {
           setConfig(d.config)
           localStorage.setItem(`event-config:${EVENT_SLUG}`, JSON.stringify(d.config))
         }
@@ -1139,6 +1145,7 @@ function EventApp() {
   function handleConfigChange(newCfg) {
     setConfig(newCfg)
     localStorage.setItem(`event-config:${EVENT_SLUG}`, JSON.stringify(newCfg))
+    sessionStorage.setItem(`cfg-saved:${EVENT_SLUG}`, Date.now().toString())
     if (EVENT_SLUG && SETUP_KEY) {
       fetch(`/api/config/${EVENT_SLUG}?key=${encodeURIComponent(SETUP_KEY)}`, {
         method: 'PUT',
