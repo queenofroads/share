@@ -54,26 +54,27 @@ function buildCaption(template, config, name) {
 
 // ─── Stats Panel ─────────────────────────────────────────────────────────────
 
-function StatsPanel({ slug, setupKey, primaryColor }) {
+function StatsPanel({ slug, setupKey }) {
   const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!slug || !setupKey) return
     fetch(`/api/stats/${slug}?key=${encodeURIComponent(setupKey)}`)
       .then(r => r.json())
-      .then(d => { if (!d.error) setStats(d) })
+      .then(d => { setStats(d.error ? null : d) })
       .catch(() => {})
+      .finally(() => setLoading(false))
   }, [slug, setupKey])
 
-  if (!stats) return null
-
-  const fmt = n => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
+  const fmt = n => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n))
+  const s = stats || { views: 0, downloads: 0, conversionPct: 0, impressionsEst: 0 }
 
   const tiles = [
-    { label: 'Page Views', value: fmt(stats.views), icon: '👁' },
-    { label: 'Downloads', value: fmt(stats.downloads), icon: '⬇️' },
-    { label: 'Conversion', value: `${stats.conversionPct}%`, icon: '📈' },
-    { label: 'Est. Impressions', value: fmt(stats.impressionsEst), icon: '🚀' },
+    { label: 'Page Views', value: loading ? '…' : fmt(s.views), icon: '👁' },
+    { label: 'Downloads', value: loading ? '…' : fmt(s.downloads), icon: '⬇️' },
+    { label: 'Conversion', value: loading ? '…' : `${s.conversionPct}%`, icon: '📈' },
+    { label: 'Est. Impressions', value: loading ? '…' : fmt(s.impressionsEst), icon: '🚀' },
   ]
 
   return (
@@ -87,11 +88,9 @@ function StatsPanel({ slug, setupKey, primaryColor }) {
           </div>
         ))}
       </div>
-      {stats.impressionsEst > 0 && (
-        <div style={{ fontSize: 12, color: '#4B5563', textAlign: 'center' }}>
-          Each download reaches ~2,500 people on LinkedIn
-        </div>
-      )}
+      <div style={{ fontSize: 12, color: '#4B5563', textAlign: 'center' }}>
+        Each download reaches ~2,500 people on LinkedIn
+      </div>
     </div>
   )
 }
@@ -1270,9 +1269,9 @@ function EventApp() {
                 )}
               </div>
             </div>
-            {downloadCount > 0 && (
+            {downloadCount !== null && (
               <div style={{ textAlign: 'center', fontSize: 13, color: '#6B7280', marginBottom: 4 }}>
-                🔥 <strong style={{ color: '#9CA3AF' }}>{downloadCount.toLocaleString()}</strong> {downloadCount === 1 ? 'person has' : 'people have'} already shared this event
+                🔥 <strong style={{ color: '#9CA3AF' }}>{downloadCount.toLocaleString()}</strong> {downloadCount === 1 ? 'person has' : 'people have'} already downloaded this graphic
               </div>
             )}
             <ProgressBar step={step} config={config} />
