@@ -1000,7 +1000,7 @@ function BuyPage() {
           </div>
           <div>
             <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-              URL Slug <span style={{ color: '#4B5563', fontWeight: 400, textTransform: 'none' }}>— shareevent.vercel.app/e/<strong style={{ color: '#6B7280' }}>this-part</strong></span>
+              Your Event Link <span style={{ color: '#4B5563', fontWeight: 400, textTransform: 'none' }}>— shareevent.vercel.app/e/<strong style={{ color: '#6B7280' }}>your-event-name</strong></span>
             </label>
             <input style={{ ...inp, fontFamily: 'monospace' }} placeholder="summer-summit-2026" value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} required />
             {form.slug && <div style={{ fontSize: 12, color: '#4B5563', marginTop: 4 }}>shareevent.vercel.app/e/{slugify(form.slug)}</div>}
