@@ -52,6 +52,50 @@ function buildCaption(template, config, name) {
     .replace(/{tagline}/g, config.tagline || '')
 }
 
+// ─── Stats Panel ─────────────────────────────────────────────────────────────
+
+function StatsPanel({ slug, setupKey, primaryColor }) {
+  const [stats, setStats] = useState(null)
+
+  useEffect(() => {
+    if (!slug || !setupKey) return
+    fetch(`/api/stats/${slug}?key=${encodeURIComponent(setupKey)}`)
+      .then(r => r.json())
+      .then(d => { if (!d.error) setStats(d) })
+      .catch(() => {})
+  }, [slug, setupKey])
+
+  if (!stats) return null
+
+  const fmt = n => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
+
+  const tiles = [
+    { label: 'Page Views', value: fmt(stats.views), icon: '👁' },
+    { label: 'Downloads', value: fmt(stats.downloads), icon: '⬇️' },
+    { label: 'Conversion', value: `${stats.conversionPct}%`, icon: '📈' },
+    { label: 'Est. Impressions', value: fmt(stats.impressionsEst), icon: '🚀' },
+  ]
+
+  return (
+    <div style={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 14, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Event Stats</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+        {tiles.map(({ label, value, icon }) => (
+          <div key={label} style={{ background: '#1F2937', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ fontSize: 11, color: '#6B7280', marginBottom: 4 }}>{icon} {label}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{value}</div>
+          </div>
+        ))}
+      </div>
+      {stats.impressionsEst > 0 && (
+        <div style={{ fontSize: 12, color: '#4B5563', textAlign: 'center' }}>
+          Each download reaches ~2,500 people on LinkedIn
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Color Swatches (module-level to avoid React remount on every render) ────
 
 const PRIMARY_PRESETS = ['#0066FF','#6366F1','#8B5CF6','#EC4899','#EF4444','#F97316','#EAB308','#22C55E','#14B8A6','#06B6D4','#000000','#FFFFFF']
@@ -595,7 +639,7 @@ function dataUrlToBlob(dataUrl) {
   return new Blob([arr], { type: mime })
 }
 
-function Step3({ config, caption, imageDataUrl, attendee, autoPost, onReset }) {
+function Step3({ config, caption, imageDataUrl, attendee, autoPost, onReset, slug }) {
   const [auth, setAuth] = useState({ loading: true, connected: false, name: null })
   const [postState, setPostState] = useState('idle')
   const [errorMsg, setErrorMsg] = useState(null)
@@ -668,6 +712,7 @@ function Step3({ config, caption, imageDataUrl, attendee, autoPost, onReset }) {
 
   function downloadPng() {
     if (!imageDataUrl) return
+    if (slug) fetch(`/api/track/${slug}?event=download`, { method: 'POST' }).catch(() => {})
     const a = document.createElement('a')
     a.href = imageDataUrl
     a.download = 'event-share.png'
@@ -1105,6 +1150,7 @@ function EventApp() {
   const [shareCaption, setShareCaption] = useState('')
   const [imageDataUrl, setImageDataUrl] = useState(null)
   const [autoPost, setAutoPost] = useState(false)
+  const [downloadCount, setDownloadCount] = useState(null)
   const graphicRef = useRef()
 
   // Fetch config from API on mount — skip overwrite if organizer just saved locally
@@ -1120,6 +1166,16 @@ function EventApp() {
           localStorage.setItem(`event-config:${EVENT_SLUG}`, JSON.stringify(d.config))
         }
       })
+      .catch(() => {})
+  }, [])
+
+  // Track page view + fetch download count for social proof (attendee only)
+  useEffect(() => {
+    if (!EVENT_SLUG || IS_ORGANIZER) return
+    fetch(`/api/track/${EVENT_SLUG}?event=view`, { method: 'POST' }).catch(() => {})
+    fetch(`/api/stats/${EVENT_SLUG}`)
+      .then(r => r.json())
+      .then(d => { if (typeof d.downloads === 'number') setDownloadCount(d.downloads) })
       .catch(() => {})
   }, [])
 
@@ -1194,6 +1250,7 @@ function EventApp() {
                     Preview attendee view ↗
                   </a>
                 </div>
+                <StatsPanel slug={EVENT_SLUG} setupKey={SETUP_KEY} primaryColor={config.primaryColor} />
                 <OrganizerPanel config={config} onChange={handleConfigChange} onDone={() => { window.location.href = `/e/${EVENT_SLUG}` }} />
               </>
             )}
@@ -1213,11 +1270,16 @@ function EventApp() {
                 )}
               </div>
             </div>
+            {downloadCount > 0 && (
+              <div style={{ textAlign: 'center', fontSize: 13, color: '#6B7280', marginBottom: 4 }}>
+                🔥 <strong style={{ color: '#9CA3AF' }}>{downloadCount.toLocaleString()}</strong> {downloadCount === 1 ? 'person has' : 'people have'} already shared this event
+              </div>
+            )}
             <ProgressBar step={step} config={config} />
             {step === 1 && <Step0 config={config} selectedStyle={attendee.style} onStyle={handleStyle} />}
             {step === 2 && <Step1 config={config} onPhoto={handlePhoto} />}
             {step === 3 && <Step2 config={config} attendee={attendee} setAttendee={setAttendee} graphicRef={graphicRef} onNext={handleShare} />}
-            {step === 4 && <Step3 config={config} caption={shareCaption} imageDataUrl={imageDataUrl} attendee={attendee} autoPost={autoPost} onReset={handleReset} />}
+            {step === 4 && <Step3 config={config} caption={shareCaption} imageDataUrl={imageDataUrl} attendee={attendee} autoPost={autoPost} onReset={handleReset} slug={EVENT_SLUG} />}
           </div>
         )}
 

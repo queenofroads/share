@@ -20,3 +20,11 @@ export async function get(key) {
 export async function set(key, value) {
   await cmd('SET', key, JSON.stringify(value))
 }
+
+export async function incr(key) {
+  return await cmd('INCR', key)
+}
+
+export async function getRaw(key) {
+  return await cmd('GET', key)
+}
