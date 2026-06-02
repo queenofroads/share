@@ -947,11 +947,6 @@ function LandingPage() {
             </div>
           ))}
         </div>
-        <div style={{ textAlign: 'center', marginTop: 48 }}>
-          <a href="/buy" style={{ display: 'inline-block', background: '#0066FF', color: '#fff', padding: '14px 32px', borderRadius: 12, fontWeight: 700, fontSize: 15, textDecoration: 'none' }}>
-            Get started for €99 →
-          </a>
-        </div>
       </div>
     </div>
   )
