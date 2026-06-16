@@ -261,6 +261,7 @@ const STYLES = [
   { key: 'split',  name: 'Split',       desc: 'Photo left, color panel right' },
   { key: 'circle', name: 'Circle',      desc: 'Circular photo, text below' },
   { key: 'banner', name: 'Bold Banner', desc: 'Photo top, color strip below' },
+  { key: 'badge',  name: 'Badge',       desc: 'Bold ring badge, minimal text' },
 ]
 
 function EventGraphic({ config, attendee, graphicRef }) {
@@ -341,6 +342,25 @@ function EventGraphic({ config, attendee, graphicRef }) {
           <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 10, fontWeight: 500 }}>{config.location} · {config.date}</div>
         </div>
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: primary }} />
+      </div>
+    </div>
+  )
+
+  // ── BADGE ──────────────────────────────────────────────────────────
+  if (style === 'badge') return (
+    <div ref={graphicRef} style={root}>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
+        <div style={{ zIndex: 2 }}><LogoOrName color={primary} height={40} /></div>
+        <div style={{
+          width: 340, height: 340, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, zIndex: 2,
+          border: `14px solid ${primary}`,
+          boxShadow: `0 0 0 4px ${bg}, 0 20px 60px rgba(0,0,0,0.5)`,
+        }}>
+          {photo}
+        </div>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 600, letterSpacing: '0.04em', zIndex: 2 }}>
+          {config.location} · {config.date}
+        </div>
       </div>
     </div>
   )
@@ -718,6 +738,37 @@ function Step3({ config, caption, imageDataUrl, attendee, autoPost, onReset, slu
     a.click()
   }
 
+  async function shareNative() {
+    if (slug) fetch(`/api/track/${slug}?event=download`, { method: 'POST' }).catch(() => {})
+    try {
+      if (imageDataUrl && navigator.canShare) {
+        const blob = dataUrlToBlob(imageDataUrl)
+        const file = new File([blob], 'event-share.png', { type: blob.type })
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], text: caption, title: config.eventName })
+          return
+        }
+      }
+      if (navigator.share) {
+        await navigator.share({ text: caption, title: config.eventName })
+        return
+      }
+    } catch (e) {
+      if (e?.name === 'AbortError') return
+    }
+    copyCaption()
+  }
+
+  const shareUrl = window.location.href
+  const encodedCaption = encodeURIComponent(caption)
+  const encodedUrl = encodeURIComponent(shareUrl)
+  const socialLinks = [
+    { key: 'linkedin', label: 'in', color: '#0A66C2', href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}` },
+    { key: 'x', label: '𝕏', color: '#000', href: `https://twitter.com/intent/tweet?text=${encodedCaption}&url=${encodedUrl}` },
+    { key: 'whatsapp', label: '✆', color: '#25D366', href: `https://wa.me/?text=${encodedCaption}%20${encodedUrl}` },
+    { key: 'facebook', label: 'f', color: '#1877F2', href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}` },
+  ]
+
   const panel = { background: '#1C1C1E', border: '1px solid #2C2C2E', borderRadius: 16, padding: '20px 20px', width: '100%', maxWidth: 420 }
   const stepNum = (n) => (
     <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#3A3A3C', color: '#9CA3AF', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{n}</div>
@@ -763,8 +814,30 @@ function Step3({ config, caption, imageDataUrl, attendee, autoPost, onReset, slu
               <button onClick={onReset} style={{ background: 'none', border: '1px solid #3A3A3C', borderRadius: 8, color: '#9CA3AF', fontSize: 13, fontWeight: 600, padding: '5px 14px', cursor: 'pointer' }}>Back</button>
             </div>
 
-            {/* Step 1: Download */}
+            {/* Quick Share */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 20, borderBottom: '1px solid #2C2C2E' }}>
+              <button onClick={shareNative} style={{ width: '100%', background: config.primaryColor, border: 'none', borderRadius: 12, padding: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <svg width="18" height="18" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>Share my badge</span>
+              </button>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+                {socialLinks.map(s => (
+                  <a
+                    key={s.key}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => { if (slug) fetch(`/api/track/${slug}?event=download`, { method: 'POST' }).catch(() => {}) }}
+                    style={{ width: 38, height: 38, borderRadius: '50%', background: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 15, textDecoration: 'none', flexShrink: 0 }}
+                  >
+                    {s.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Step 1: Download */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 20, paddingBottom: 20, borderBottom: '1px solid #2C2C2E' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 {stepNum(1)}
                 <span style={{ color: '#fff', fontWeight: 600, fontSize: 15 }}>Download your image</span>
