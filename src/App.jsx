@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import html2canvas from 'html2canvas'
 import './index.css'
 
-const STORAGE_KEY = 'event-share-config'
 
 const DEFAULT_CONFIG = {
   eventName: 'Your Event',
@@ -23,17 +22,6 @@ const DEFAULT_CONFIG = {
   fontFamily: 'Inter',
 }
 
-function loadConfig() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return { ...DEFAULT_CONFIG, ...JSON.parse(raw) }
-  } catch {}
-  return DEFAULT_CONFIG
-}
-
-function saveConfig(cfg) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg))
-}
 
 function getTemplate(config, badge) {
   if (badge === 'Speaking') return config.captionSpeaking || config.captionAttending || ''
@@ -256,6 +244,12 @@ function PhotoImg({ photoUrl, objPos, filterCss, style: imgStyle }) {
 
 // ─── Event Graphic ────────────────────────────────────────────────
 
+function LogoOrName({ logoUrl, eventName, color, height = 47 }) {
+  return logoUrl
+    ? <img src={logoUrl} alt="logo" style={{ height, width: 'auto', objectFit: 'contain' }} />
+    : <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color }}>{eventName}</div>
+}
+
 const STYLES = [
   { key: 'frame',  name: 'Frame',       desc: 'Full photo + border frame' },
   { key: 'split',  name: 'Split',       desc: 'Photo left, color panel right' },
@@ -275,11 +269,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
 
   const filterCss = PHOTO_FILTERS[attendee.photoFilter || 'none']
 
-  const LogoOrName = ({ color = primary, height = 47 }) => (
-    config.logoUrl
-      ? <img src={config.logoUrl} alt="logo" style={{ height, width: 'auto', objectFit: 'contain' }} />
-      : <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color }}>{config.eventName}</div>
-  )
+  const logo = (color, height = 47) => <LogoOrName logoUrl={config.logoUrl} eventName={config.eventName} color={color} height={height} />
 
   const photo = <PhotoImg photoUrl={attendee.photoUrl} objPos={objPos} filterCss={filterCss} />
 
@@ -298,7 +288,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
       <div style={{ position: 'absolute', top: 26, left: 50, zIndex: 6 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.06em' }}>{config.date}</div>
       </div>
-      <div style={{ position: 'absolute', top: 20, right: 50, zIndex: 6 }}><LogoOrName /></div>
+      <div style={{ position: 'absolute', top: 20, right: 50, zIndex: 6 }}>{logo(primary)}</div>
       <div style={{ position: 'absolute', bottom: 30, left: 50, right: 50, zIndex: 6 }}>
         <div style={{ fontSize: 42, fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-1px' }}>{config.eventName}</div>
         <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginTop: 8, fontWeight: 500 }}>{config.location}</div>
@@ -315,7 +305,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
           <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.35))' }} />
         </div>
         <div style={{ flex: 1, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px 28px', overflow: 'hidden' }}>
-          <div><LogoOrName color="#fff" height={42} /></div>
+          <div>{logo('#fff', 42)}</div>
           <div>
             <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{config.eventName}</div>
           </div>
@@ -333,7 +323,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
     <div ref={graphicRef} style={root}>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: primary }} />
-        <div style={{ marginTop: 32, zIndex: 2 }}><LogoOrName color={primary} height={42} /></div>
+        <div style={{ marginTop: 32, zIndex: 2 }}>{logo(primary, 42)}</div>
         <div style={{ marginTop: 28, width: 260, height: 260, borderRadius: '50%', overflow: 'hidden', border: `6px solid ${primary}`, flexShrink: 0, zIndex: 2, boxShadow: `0 0 0 4px ${bg}, 0 0 0 10px ${primary}55` }}>
           {photo}
         </div>
@@ -350,7 +340,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
   if (style === 'badge') return (
     <div ref={graphicRef} style={root}>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
-        <div style={{ zIndex: 2 }}><LogoOrName color={primary} height={40} /></div>
+        <div style={{ zIndex: 2 }}>{logo(primary, 40)}</div>
         <div style={{
           width: 340, height: 340, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, zIndex: 2,
           border: `14px solid ${primary}`,
@@ -370,7 +360,7 @@ function EventGraphic({ config, attendee, graphicRef }) {
     <div ref={graphicRef} style={root}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 360, overflow: 'hidden' }}>
         {photo}
-        <div style={{ position: 'absolute', top: 16, right: 24, zIndex: 2 }}><LogoOrName height={42} /></div>
+        <div style={{ position: 'absolute', top: 16, right: 24, zIndex: 2 }}>{logo(primary, 42)}</div>
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 80, background: `linear-gradient(to top, ${primary}, transparent)` }} />
       </div>
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 240, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 40px' }}>
@@ -631,7 +621,7 @@ function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
                     logging: false,
                   })
                   dataUrl = canvas.toDataURL('image/png')
-                } catch {}
+                } catch { /* ignore capture errors */ }
               }
               setExporting(false)
               onNext(localCaption, dataUrl)
@@ -707,11 +697,11 @@ function Step3({ config, caption, imageDataUrl, attendee, autoPost, onReset, slu
   function connectLinkedIn() {
     try {
       sessionStorage.setItem(SS_KEY, JSON.stringify({ imageDataUrl, caption, attendee }))
-    } catch (e) {
+    } catch {
       // If imageDataUrl is too large, store without it and re-export on return
       try {
         sessionStorage.setItem(SS_KEY, JSON.stringify({ caption, attendee }))
-      } catch {}
+      } catch { /* ignore */ }
     }
     window.location.href = '/api/auth/linkedin'
   }
@@ -1187,7 +1177,7 @@ function EventApp() {
 
   const [config, setConfig] = useState(() => {
     const cached = localStorage.getItem(`event-config:${EVENT_SLUG}`)
-    if (cached) try { return { ...DEFAULT_CONFIG, ...JSON.parse(cached) } } catch {}
+    if (cached) try { return { ...DEFAULT_CONFIG, ...JSON.parse(cached) } } catch { /* ignore invalid cache */ }
     return DEFAULT_CONFIG
   })
   const [step, setStep] = useState(1)
@@ -1240,7 +1230,7 @@ function EventApp() {
       setImageDataUrl(saved.imageDataUrl || null)
       setAutoPost(true)
       setStep(4)
-    } catch {}
+    } catch { /* ignore missing/invalid session data */ }
   }, [])
 
   function handleConfigChange(newCfg) {

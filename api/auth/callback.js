@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     const ui = await uiRes.json()
     sub = ui.sub || null
     name = ui.name || ui.given_name || name
-  } catch {}
+  } catch { /* ignore userinfo fetch failure */ }
 
   // Get the classic LinkedIn person ID via /v2/me — more reliable for REST API URN
   let personId = sub
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
     })
     const me = await meRes.json()
     if (me.id) personId = me.id
-  } catch {}
+  } catch { /* ignore /v2/me failure */ }
 
   if (!personId) {
     return res.redirect(`${process.env.APP_URL}/?li_error=1`)
