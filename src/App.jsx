@@ -279,40 +279,46 @@ function EventGraphic({ config, attendee, graphicRef }) {
   if (style === 'frame') return (
     <div ref={graphicRef} style={root}>
       <div style={{ position: 'absolute', inset: 0 }}>{photo}</div>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 140, background: 'linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, transparent 100%)' }} />
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 200, background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%)' }} />
-      <div style={{ position: 'absolute', inset: 0, border: `10px solid ${primary}`, pointerEvents: 'none', zIndex: 4 }} />
-      {[['top','left'],['top','right'],['bottom','left'],['bottom','right']].map(([v,h]) => (
-        <div key={v+h} style={{ position: 'absolute', [v]: 10, [h]: 10, width: 28, height: 28, background: primary, zIndex: 5 }} />
-      ))}
-      <div style={{ position: 'absolute', top: 26, left: 50, zIndex: 6 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.06em' }}>{config.date}</div>
+      {/* Cinematic gradient overlays */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 220, background: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 100%)' }} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 280, background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)' }} />
+      {/* Left accent bar */}
+      <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: 8, background: primary, zIndex: 4 }} />
+      {/* Top section */}
+      <div style={{ position: 'absolute', top: 32, left: 36, right: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 6 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: primary, letterSpacing: '0.18em', textTransform: 'uppercase' }}>{config.date}</div>
+        {logo('rgba(255,255,255,0.9)', 40)}
       </div>
-      <div style={{ position: 'absolute', top: 20, right: 50, zIndex: 6 }}>{logo(primary)}</div>
-      <div style={{ position: 'absolute', bottom: 30, left: 50, right: 50, zIndex: 6 }}>
-        <div style={{ fontSize: 42, fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-1px' }}>{config.eventName}</div>
-        <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginTop: 8, fontWeight: 500 }}>{config.location}</div>
+      {/* Bottom section */}
+      <div style={{ position: 'absolute', bottom: 0, left: 36, right: 36, paddingBottom: 40, zIndex: 6 }}>
+        <div style={{ width: 40, height: 3, background: primary, marginBottom: 16 }} />
+        <div style={{ fontSize: 48, fontWeight: 900, color: '#fff', lineHeight: 1.0, letterSpacing: '-1.5px' }}>{config.eventName}</div>
+        <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', marginTop: 12, fontWeight: 500, letterSpacing: '0.04em' }}>{config.location}</div>
       </div>
     </div>
   )
 
   // ── SPLIT ──────────────────────────────────────────────────────────
   if (style === 'split') return (
-    <div ref={graphicRef} style={root}>
-      <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
-        <div style={{ position: 'relative', width: '55%', height: '100%', overflow: 'hidden', flexShrink: 0 }}>
-          {photo}
-          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.35))' }} />
+    <div ref={graphicRef} style={{ ...root, background: primary }}>
+      {/* Left photo */}
+      <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '55%', overflow: 'hidden' }}>
+        {photo}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 50%, rgba(0,0,0,0.15) 100%)' }} />
+      </div>
+      {/* Diagonal divider */}
+      <div style={{ position: 'absolute', top: -20, bottom: -20, left: 'calc(55% - 36px)', width: 72, background: primary, transform: 'skewX(-4deg)', zIndex: 1 }} />
+      {/* Right panel */}
+      <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: '52%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '40px 36px 40px 48px', zIndex: 2 }}>
+        <div>{logo('#fff', 40)}</div>
+        <div>
+          <div style={{ width: 32, height: 3, background: 'rgba(255,255,255,0.5)', marginBottom: 14 }} />
+          <div style={{ fontSize: 34, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{config.eventName}</div>
+          {config.tagline ? <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginTop: 10, fontStyle: 'italic' }}>{config.tagline}</div> : null}
         </div>
-        <div style={{ flex: 1, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '32px 28px', overflow: 'hidden' }}>
-          <div>{logo('#fff', 42)}</div>
-          <div>
-            <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{config.eventName}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>{config.location}</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>{config.date}</div>
-          </div>
+        <div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{config.location}</div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 5 }}>{config.date}</div>
         </div>
       </div>
     </div>
@@ -321,17 +327,30 @@ function EventGraphic({ config, attendee, graphicRef }) {
   // ── CIRCLE ─────────────────────────────────────────────────────────
   if (style === 'circle') return (
     <div ref={graphicRef} style={root}>
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: primary }} />
-        <div style={{ marginTop: 32, zIndex: 2 }}>{logo(primary, 42)}</div>
-        <div style={{ marginTop: 28, width: 260, height: 260, borderRadius: '50%', overflow: 'hidden', border: `6px solid ${primary}`, flexShrink: 0, zIndex: 2, boxShadow: `0 0 0 4px ${bg}, 0 0 0 10px ${primary}55` }}>
-          {photo}
+      {/* Atmospheric blurred background */}
+      {attendee.photoUrl ? (
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${attendee.photoUrl})`, backgroundSize: 'cover', backgroundPosition: objPos, filter: 'blur(32px) brightness(0.18) saturate(0.6)', transform: 'scale(1.2)' }} />
+      ) : (
+        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 40%, ${primary}30 0%, ${bg} 70%)` }} />
+      )}
+      {/* Vignette */}
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, transparent 20%, rgba(0,0,0,0.75) 100%)' }} />
+      {/* Content */}
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ marginBottom: 24, zIndex: 2 }}>{logo('rgba(255,255,255,0.85)', 38)}</div>
+        {/* Outer decorative ring */}
+        <div style={{ position: 'relative', zIndex: 2, flexShrink: 0, marginBottom: 28 }}>
+          <div style={{ position: 'absolute', top: -14, left: -14, right: -14, bottom: -14, borderRadius: '50%', border: `1px solid ${primary}45` }} />
+          <div style={{ position: 'absolute', top: -6, left: -6, right: -6, bottom: -6, borderRadius: '50%', border: `1px solid ${primary}70` }} />
+          <div style={{ width: 260, height: 260, borderRadius: '50%', overflow: 'hidden', border: `6px solid ${primary}`, boxShadow: `0 0 0 2px ${bg}, 0 0 40px ${primary}70, 0 0 80px ${primary}30` }}>
+            {photo}
+          </div>
         </div>
-        <div style={{ marginTop: 24, textAlign: 'center', padding: '0 40px', zIndex: 2 }}>
-          <div style={{ fontSize: 36, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{config.eventName}</div>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 10, fontWeight: 500 }}>{config.location} · {config.date}</div>
+        <div style={{ textAlign: 'center', padding: '0 52px', zIndex: 2 }}>
+          <div style={{ fontSize: 40, fontWeight: 900, color: '#fff', lineHeight: 1.0, letterSpacing: '-1px', textShadow: '0 2px 24px rgba(0,0,0,0.6)' }}>{config.eventName}</div>
+          <div style={{ width: 36, height: 2, background: primary, margin: '14px auto 12px' }} />
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{config.location} · {config.date}</div>
         </div>
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: primary }} />
       </div>
     </div>
   )
@@ -339,17 +358,32 @@ function EventGraphic({ config, attendee, graphicRef }) {
   // ── BADGE ──────────────────────────────────────────────────────────
   if (style === 'badge') return (
     <div ref={graphicRef} style={root}>
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
-        <div style={{ zIndex: 2 }}>{logo(primary, 40)}</div>
-        <div style={{
-          width: 340, height: 340, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, zIndex: 2,
-          border: `14px solid ${primary}`,
-          boxShadow: `0 0 0 4px ${bg}, 0 20px 60px rgba(0,0,0,0.5)`,
-        }}>
-          {photo}
+      {/* Radial glow background */}
+      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 50%, ${primary}20 0%, ${bg} 65%)` }} />
+      {/* Decorative concentric rings */}
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 500, height: 500, borderRadius: '50%', border: `1px solid ${primary}18`, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 430, height: 430, borderRadius: '50%', border: `1px solid ${primary}30`, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 370, height: 370, borderRadius: '50%', border: `1px solid ${primary}50`, pointerEvents: 'none' }} />
+      {/* Content */}
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
+        <div style={{ zIndex: 2 }}>{logo(primary, 38)}</div>
+        {/* Main photo ring with glow */}
+        <div style={{ position: 'relative', zIndex: 2, flexShrink: 0 }}>
+          <div style={{ width: 300, height: 300, borderRadius: '50%', overflow: 'hidden', border: `10px solid ${primary}`, boxShadow: `0 0 0 3px ${bg}, 0 0 0 5px ${primary}60, 0 0 60px ${primary}50, 0 20px 60px rgba(0,0,0,0.5)` }}>
+            {photo}
+          </div>
+          {/* Diamond markers */}
+          {[
+            { top: -9, left: '50%', transform: 'translateX(-50%) rotate(45deg)' },
+            { bottom: -9, left: '50%', transform: 'translateX(-50%) rotate(45deg)' },
+            { left: -9, top: '50%', transform: 'translateY(-50%) rotate(45deg)' },
+            { right: -9, top: '50%', transform: 'translateY(-50%) rotate(45deg)' },
+          ].map((s, i) => (
+            <div key={i} style={{ position: 'absolute', width: 14, height: 14, background: primary, boxShadow: `0 0 8px ${primary}`, ...s }} />
+          ))}
         </div>
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 600, letterSpacing: '0.04em', zIndex: 2 }}>
-          {config.location} · {config.date}
+        <div style={{ textAlign: 'center', zIndex: 2 }}>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase' }}>{config.location} · {config.date}</div>
         </div>
       </div>
     </div>
@@ -358,14 +392,16 @@ function EventGraphic({ config, attendee, graphicRef }) {
   // ── BANNER ─────────────────────────────────────────────────────────
   return (
     <div ref={graphicRef} style={root}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 360, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 380, overflow: 'hidden' }}>
         {photo}
-        <div style={{ position: 'absolute', top: 16, right: 24, zIndex: 2 }}>{logo(primary, 42)}</div>
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 80, background: `linear-gradient(to top, ${primary}, transparent)` }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 100, background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)' }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 120, background: `linear-gradient(to top, ${primary} 0%, transparent 100%)` }} />
+        <div style={{ position: 'absolute', top: 28, left: 32, zIndex: 2 }}>{logo('rgba(255,255,255,0.9)', 40)}</div>
       </div>
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 240, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 40px' }}>
-        <div style={{ fontSize: 40, fontWeight: 900, color: '#fff', lineHeight: 1.05, letterSpacing: '-1px' }}>{config.eventName}</div>
-        <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginTop: 10, fontWeight: 500 }}>{config.location} · {config.date}</div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 228, background: primary, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 40px' }}>
+        <div style={{ width: 36, height: 3, background: 'rgba(255,255,255,0.4)', marginBottom: 14 }} />
+        <div style={{ fontSize: 42, fontWeight: 900, color: '#fff', lineHeight: 1.0, letterSpacing: '-1px' }}>{config.eventName}</div>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginTop: 12, fontWeight: 500, letterSpacing: '0.04em' }}>{config.location} · {config.date}</div>
       </div>
     </div>
   )
@@ -786,18 +822,19 @@ function Step3({ config, caption, imageDataUrl, attendee, autoPost, onReset, slu
 
       ) : (
         <>
-          {/* Image with glow aura */}
+          {/* Image reveal with glow */}
           {imageDataUrl && (
             <div style={{ position: 'relative', marginTop: 8 }}>
-              <div style={{ position: 'absolute', inset: -48, borderRadius: '50%', background: `radial-gradient(circle, ${config.primaryColor}45 0%, transparent 65%)`, filter: 'blur(28px)', zIndex: 0 }} />
-              <img src={imageDataUrl} alt="" style={{ position: 'relative', zIndex: 1, width: 210, height: 210, borderRadius: 20, objectFit: 'cover', boxShadow: `0 24px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.07)` }} />
+              <div style={{ position: 'absolute', inset: -60, borderRadius: '50%', background: `radial-gradient(circle, ${config.primaryColor}55 0%, transparent 60%)`, filter: 'blur(36px)', zIndex: 0 }} />
+              <div style={{ position: 'absolute', inset: -20, borderRadius: 28, background: `radial-gradient(circle, ${config.primaryColor}25 0%, transparent 70%)`, filter: 'blur(16px)', zIndex: 0 }} />
+              <img src={imageDataUrl} alt="" style={{ position: 'relative', zIndex: 1, width: 260, height: 260, borderRadius: 22, objectFit: 'cover', boxShadow: `0 32px 80px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.08), 0 0 0 6px ${config.primaryColor}25` }} />
             </div>
           )}
 
           {/* Headline */}
           <div style={{ textAlign: 'center' }}>
-            <h2 style={{ fontSize: 24, fontWeight: 800, color: '#fff', margin: '0 0 4px', letterSpacing: '-0.5px' }}>Your badge is ready ✨</h2>
-            <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>Share it with your network</p>
+            <h2 style={{ fontSize: 26, fontWeight: 900, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.5px' }}>Looking good! 🔥</h2>
+            <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>Share it and inspire your network</p>
           </div>
 
           {/* Hero Share Button */}
