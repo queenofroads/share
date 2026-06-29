@@ -607,17 +607,17 @@ function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={styles.label}>Badge</label>
+            <label style={styles.label}>Your Role</label>
             <div style={{ display: 'flex', gap: 8 }}>
               {['Attending', 'Speaking', 'Partner'].map((b) => (
                 <button
                   key={b}
                   onClick={() => update('badge', b)}
                   style={{
-                    padding: '6px 16px',
+                    padding: '7px 18px',
                     borderRadius: 99,
                     fontSize: 13,
-                    fontWeight: 600,
+                    fontWeight: 700,
                     border: `1.5px solid ${attendee.badge === b ? config.primaryColor : '#374151'}`,
                     background: attendee.badge === b ? config.primaryColor : 'transparent',
                     color: attendee.badge === b ? '#fff' : '#9CA3AF',
@@ -632,7 +632,10 @@ function Step2({ config, attendee, setAttendee, graphicRef, onNext }) {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={styles.label}>LinkedIn Caption</label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <label style={styles.label}>LinkedIn Caption</label>
+              <span style={{ fontSize: 11, color: '#4B5563', fontWeight: 500 }}>updates with your role ↑</span>
+            </div>
             <textarea
               style={{ ...styles.input, resize: 'none', minHeight: 110, borderColor: warn ? '#F59E0B' : '#374151' }}
               value={localCaption}
